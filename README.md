@@ -1,6 +1,6 @@
 <div align="center">
-  <h1>🚀 TrustedHash</h1>
-  <p><strong>Bitcoin Proof of Existence service</strong></p>
+  <h1>🚀 BTCNotar</h1>
+  <p><strong>Bitcoin Notarization Service</strong></p>
   <p>Timestamp file hashes on the Bitcoin blockchain using <strong>OP_RETURN</strong> + <strong>Lightning payments</strong></p>
 </div>
 
@@ -9,7 +9,7 @@
 <h2>🧠 Overview</h2>
 
 <p>
-  <strong>TrustedHash</strong> allows anyone to prove that a file existed at a specific moment in time —
+  <strong>BTCNotar</strong> allows anyone to prove that a file existed at a specific moment in time —
   <strong>without uploading the file itself</strong>.
 </p>
 
@@ -63,8 +63,8 @@
 
 <h3>1. Clone</h3>
 
-<pre><code>git clone https://github.com/yordank/TrustedHash.git
-cd TrustedHash</code></pre>
+<pre><code>git clone https://github.com/yordank/BTCNotar.git
+cd BTCNotar</code></pre>
 
 <h3>2. Install</h3>
 
