@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Bitcoin-OP_RETURN-orange" />
+  <img src="https://img.shields.io/badge/Lightning-Breez-yellow" />
+  <img src="https://img.shields.io/badge/License-MIT-blue" />
+</p>
 <div align="center">
   <h1>🚀 BTCNotar</h1>
   <p><strong>Bitcoin Notarization Service</strong></p>
