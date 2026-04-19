@@ -4,8 +4,8 @@
   <img src="https://img.shields.io/badge/License-MIT-blue" />
 </p>
 
-<p align="center" style="background-color:black; padding:20px;">
-  <img src="https://www.btcnotar.com/logo.png" height="120" />
+<p align="center">
+  <img src="./public/banner.png" width="100%" />
 </p>
 
 <div align="center">
