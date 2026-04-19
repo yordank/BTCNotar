@@ -3,6 +3,11 @@
   <img src="https://img.shields.io/badge/Lightning-Breez-yellow" />
   <img src="https://img.shields.io/badge/License-MIT-blue" />
 </p>
+
+<p align="center" style="background-color:black; padding:20px;">
+  <img src="https://www.btcnotar.com/logo.png" height="120" />
+</p>
+
 <div align="center">
   <h1>🚀 BTCNotar</h1>
   <p><strong>Bitcoin Notarization Service</strong></p>
