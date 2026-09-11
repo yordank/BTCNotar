@@ -1,0 +1,23 @@
+{
+  "name": "btcnotar-webapp-demo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Demo app for the btcnotar library: single-hash instant OP_RETURN anchoring (paid via Lightning) plus daily batch notarization via BTCNotar.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "btcnotar": "*",
+    "@breeztech/breez-sdk-spark": "^0.7.10",
+    "axios": "^1.13.2",
+    "bitcoinjs-lib": "^7.0.1",
+    "bolt11": "^1.4.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "ecpair": "^3.0.0",
+    "express": "^5.2.1",
+    "qrcode": "^1.5.4",
+    "tiny-secp256k1": "^2.2.4"
+  }
+}

@@ -1,11 +1,12 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import axios from "axios";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import "dotenv/config";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { ECPairFactory } from "ecpair";
+import { BTCNotar, FileStore, buildOpReturnScript } from "btcnotar";
 
 // Breez SDK Spark (CJS)
 import pkg from "@breeztech/breez-sdk-spark";
@@ -23,7 +24,7 @@ app.use(express.static("public"));
 const PORT = 8787;
 
 // ---------------- HARDCODED CONFIG ----------------
- 
+
 const OPRETURN_WIF_MAINNET = process.env.OPRETURN_WIF_MAINNET;
 const BREEZ_API_KEY = process.env.BREEZ_API_KEY;
 const BREEZ_MNEMONIC = process.env.BREEZ_MNEMONIC;
@@ -34,7 +35,6 @@ const MEMPOOL_API = "https://mempool.space/api";
 // Lightning price (sats) and expiry (seconds)
 const LN_PRICE_SATS = 1000;
 const LN_EXPIRY_SEC = 900;
-
 
 // storage dir for Breez SDK
 const BREEZ_STORAGE_DIR = "./.breez-data";
@@ -68,15 +68,37 @@ async function getSdk() {
 }
 // --------------------------------------------------
 
-// ----------------- OP_RETURN helpers -----------------
-function isValidHashHex(s) {
-    return /^[0-9a-f]{64}$/i.test(String(s || "").trim());
+// ================================================================
+// Batch notarization (btcnotar library): hashes get queued here and
+// anchored together, once a day, in a single Merkle-rooted OP_RETURN tx.
+// ================================================================
+const notary = OPRETURN_WIF_MAINNET
+    ? new BTCNotar({
+          wif: OPRETURN_WIF_MAINNET,
+          network: "mainnet",
+          store: new FileStore({ filePath: "./.data/notary-store.json" }),
+          intervalMs: 24 * 60 * 60 * 1000, // once a day
+      })
+    : null;
+
+if (notary) {
+    notary.start();
+    console.log(`⛓️  BTCNotar batching active — address ${notary.address}, settling every 24h`);
+} else {
+    console.warn("⚠️  OPRETURN_WIF_MAINNET not set — batch notarization endpoints are disabled");
 }
 
-function buildOpReturnScriptFromHex(hex) {
-    const buf = Buffer.from(hex, "hex");
-    if (buf.length > 80) throw new Error("OP_RETURN > 80 bytes");
-    return bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, buf]);
+function requireNotary(res) {
+    if (!notary) {
+        res.status(503).json({ error: "Notary not configured: set OPRETURN_WIF_MAINNET" });
+        return null;
+    }
+    return notary;
+}
+
+// ----------------- OP_RETURN helpers (single-hash, instant anchor) -----------------
+function isValidHashHex(s) {
+    return /^[0-9a-f]{64}$/i.test(String(s || "").trim());
 }
 
 function createOpReturnTx({ keyPair, fromAddress, utxo, dataHex, feeSat, network }) {
@@ -90,7 +112,7 @@ function createOpReturnTx({ keyPair, fromAddress, utxo, dataHex, feeSat, network
     });
 
     // OP_RETURN output (0 sats)
-    psbt.addOutput({ script: buildOpReturnScriptFromHex(dataHex), value: 0n });
+    psbt.addOutput({ script: buildOpReturnScript(Buffer.from(dataHex, "hex")), value: 0n });
 
     // Dust guard (safe buffer)
     const DUST_LIMIT = 1000n;
@@ -251,7 +273,7 @@ app.get("/api/ln/debug/latest", async (req, res) => {
 });
 
 // =========================
-// OP_RETURN (Mainnet)
+// OP_RETURN (Mainnet, instant single-hash anchor)
 // =========================
 app.post("/api/opreturn", async (req, res) => {
     try {
@@ -294,6 +316,68 @@ app.post("/api/opreturn", async (req, res) => {
     }
 });
 
+// =========================
+// Batch notarization (btcnotar library)
+// =========================
+
+// POST /api/notary/hash  body: { hashHex }
+// Queue a hash for the next automatic (daily) settlement.
+app.post("/api/notary/hash", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const hashHex = String(req.body?.hashHex || "").trim().toLowerCase();
+        if (!isValidHashHex(hashHex)) {
+            return res.status(400).json({ error: "hashHex must be 64 hex chars" });
+        }
+        const entry = await n.addHash(hashHex);
+        res.json({ ...entry, pendingCount: await n.pendingCount() });
+    } catch (e) {
+        res.status(500).json({ error: e?.message || String(e) });
+    }
+});
+
+// POST /api/notary/settle
+// Force-settle the current batch immediately (normally happens once a day automatically).
+app.post("/api/notary/settle", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const batch = await n.settle();
+        res.json(batch || { message: "nothing pending" });
+    } catch (e) {
+        res.status(500).json({ error: e?.response?.data || e?.message || String(e) });
+    }
+});
+
+// GET /api/notary/proof/:hash
+app.get("/api/notary/proof/:hash", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const proof = await n.getProof(String(req.params.hash || "").toLowerCase());
+        if (!proof) return res.status(404).json({ error: "no proof found for that hash" });
+        res.json(proof);
+    } catch (e) {
+        res.status(500).json({ error: e?.message || String(e) });
+    }
+});
+
+// GET /api/notary/verify/:hash
+// Cryptographically re-derives the Merkle root from the hash + its proof,
+// then cross-checks it against the live on-chain transaction: unambiguous
+// proof of whether (and when, in which tx/block) a hash was anchored.
+app.get("/api/notary/verify/:hash", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const result = await n.verify(String(req.params.hash || "").toLowerCase());
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e?.message || String(e) });
+    }
+});
+
 app.get("/", (req, res) => res.redirect("/timestamp.html"));
 
 app.listen(PORT, () => {
@@ -326,8 +410,3 @@ app.get("/api/balance", async (req, res) => {
         res.status(500).json({ error: e?.message || String(e) });
     }
 });
-
-// --- Breez SDK singleton ---
-//let sdkPromise = null;
-
-
