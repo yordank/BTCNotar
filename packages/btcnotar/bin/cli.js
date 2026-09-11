@@ -14,15 +14,16 @@ Usage:
   btcnotar address           Print the notary's Bitcoin address
 
 Environment variables:
-  BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions [required]
+  BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions
+                     [required for "settle" and "address"; "add"/"proof"/"verify" are free and don't need it]
   BTCNOTAR_NETWORK   "mainnet" or "testnet" (default: mainnet)
   BTCNOTAR_STORE     Path to the JSON store file (default: ./.btcnotar/store.json)
 `);
 }
 
-function buildNotary() {
+function buildNotary({ requireWif = false } = {}) {
     const wif = process.env.BTCNOTAR_WIF;
-    if (!wif) {
+    if (requireWif && !wif) {
         console.error("Missing BTCNOTAR_WIF environment variable.");
         process.exit(1);
     }
@@ -37,21 +38,21 @@ async function main() {
     if (!cmd || cmd === "-h" || cmd === "--help") return usage();
 
     if (cmd === "address") {
-        const notary = buildNotary();
+        const notary = buildNotary({ requireWif: true });
         console.log(notary.address);
         return;
     }
 
     if (cmd === "add") {
         if (!arg) throw new Error("usage: btcnotar add <hash>");
-        const notary = buildNotary();
+        const notary = buildNotary(); // free — no wallet needed
         const entry = await notary.addHash(arg);
         console.log(JSON.stringify(entry, null, 2));
         return;
     }
 
     if (cmd === "settle") {
-        const notary = buildNotary();
+        const notary = buildNotary({ requireWif: true });
         const batch = await notary.settle();
         console.log(batch ? JSON.stringify(batch, null, 2) : "Nothing pending.");
         return;
@@ -59,7 +60,7 @@ async function main() {
 
     if (cmd === "proof") {
         if (!arg) throw new Error("usage: btcnotar proof <hash>");
-        const notary = buildNotary();
+        const notary = buildNotary(); // free — no wallet needed
         const proof = await notary.getProof(arg);
         console.log(proof ? JSON.stringify(proof, null, 2) : "No proof found for that hash.");
         return;
@@ -67,7 +68,7 @@ async function main() {
 
     if (cmd === "verify") {
         if (!arg) throw new Error("usage: btcnotar verify <hash>");
-        const notary = buildNotary();
+        const notary = buildNotary(); // free — no wallet needed
         const result = await notary.verify(arg);
         console.log(JSON.stringify(result, null, 2));
         process.exit(result.valid ? 0 : 1);

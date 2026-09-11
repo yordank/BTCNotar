@@ -122,3 +122,18 @@ test("settle() is a no-op when nothing is pending", async () => {
     const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider: new FakeProvider() });
     assert.equal(await notary.settle(), null);
 });
+
+test("addHash() works without a wif: recording is free and needs no wallet", async () => {
+    const notary = new BTCNotar({ store: new MemoryStore(), provider: new FakeProvider() });
+    assert.equal(notary.address, null);
+    const hash = sha256hex("doc-1");
+    await notary.addHash(hash);
+    assert.equal(await notary.pendingCount(), 1);
+});
+
+test("settle() and start() refuse to run without a wif", async () => {
+    const notary = new BTCNotar({ store: new MemoryStore(), provider: new FakeProvider() });
+    await notary.addHash(sha256hex("doc-1"));
+    await assert.rejects(() => notary.settle(), /requires a funded wallet/);
+    assert.throws(() => notary.start(), /requires a funded wallet/);
+});

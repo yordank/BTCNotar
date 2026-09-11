@@ -21,9 +21,19 @@ function isHex(s) {
  * proofs that can be independently and unambiguously verified later
  * against the live chain (which transaction, which block, which date).
  *
+ * Recording a hash is free and needs no wallet: `addHash()` only ever
+ * touches local storage. A funded `wif` is only needed by whoever actually
+ * runs settlement (`settle()` / `start()`) — the one on-chain transaction
+ * fee per batch is paid once by that operator, not per recorded hash. This
+ * split lets many callers queue hashes for free against a shared notary
+ * service that settles on its own schedule.
+ *
  * Typical usage:
+ *   const notary = new BTCNotar({ store });       // no wif needed to record
+ *   await notary.addHash(sha256HexOfSomeDocument); // free, local-only
+ *   ...
+ *   // on the service that pays for anchoring:
  *   const notary = new BTCNotar({ wif, network: "mainnet", store });
- *   await notary.addHash(sha256HexOfSomeDocument);
  *   notary.start();                    // settle once every 24h automatically
  *   ...
  *   const proof = await notary.getProof(hash);
@@ -31,10 +41,14 @@ function isHex(s) {
  */
 export class BTCNotar {
     constructor({ wif, network = "mainnet", store, provider, feeRateSatVb, intervalMs = DAY_MS } = {}) {
-        if (!wif) throw new Error("wif (private key, WIF format) is required");
         this.network = network === "mainnet" ? bitcoin.networks.bitcoin : bitcoin.networks.testnet;
-        this.keyPair = ECPair.fromWIF(wif, this.network);
-        this.address = bitcoin.payments.p2wpkh({ pubkey: this.keyPair.publicKey, network: this.network }).address;
+        if (wif) {
+            this.keyPair = ECPair.fromWIF(wif, this.network);
+            this.address = bitcoin.payments.p2wpkh({ pubkey: this.keyPair.publicKey, network: this.network }).address;
+        } else {
+            this.keyPair = null;
+            this.address = null;
+        }
         this.store = store || new MemoryStore();
         this.provider = provider || new MempoolProvider({ network });
         this.feeRateSatVb = feeRateSatVb || null;
@@ -42,7 +56,7 @@ export class BTCNotar {
         this._timer = null;
     }
 
-    /** Queue a document hash for the next settlement batch. */
+    /** Queue a document hash for the next settlement batch. Free — no wallet, no chain access. */
     async addHash(hashHex) {
         if (!isHex(hashHex)) throw new Error(`hash must be a hex string, got "${hashHex}"`);
         const entry = { id: crypto.randomUUID(), hash: hashHex.toLowerCase(), addedAt: new Date().toISOString() };
@@ -61,6 +75,10 @@ export class BTCNotar {
      * (including a proof per hash), or null if there was nothing pending.
      */
     async settle() {
+        if (!this.keyPair) {
+            throw new Error("settle() requires a funded wallet: pass `wif` to the BTCNotar constructor");
+        }
+
         const pending = await this.store.listPending();
         if (!pending.length) return null;
 
@@ -109,8 +127,11 @@ export class BTCNotar {
         return batch;
     }
 
-    /** Start automatic settlement every `intervalMs` (default: once a day). */
+    /** Start automatic settlement every `intervalMs` (default: once a day). Requires `wif`. */
     start({ intervalMs } = {}) {
+        if (!this.keyPair) {
+            throw new Error("start() requires a funded wallet: pass `wif` to the BTCNotar constructor");
+        }
         if (this._timer) return;
         const ms = intervalMs || this.intervalMs;
         this._timer = setInterval(() => {

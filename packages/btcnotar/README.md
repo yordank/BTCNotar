@@ -21,6 +21,22 @@ thousands of hashes into one Merkle root per settlement means:
   you can recompute the Merkle root and confirm it matches what's actually
   on-chain — no trust in the notary's database required.
 
+## Recording is free
+
+`addHash()` never touches the blockchain and never needs a wallet — it just
+appends to local storage. A funded Bitcoin wallet (`wif`) is only required
+by whoever calls `settle()` / `start()`, i.e. whoever operates the periodic
+anchoring. That means:
+
+- Anyone embedding `btcnotar` can queue hashes with **zero setup and zero
+  cost**: `new BTCNotar()` with no options, then `addHash()`.
+- Only **one** party — the service operator — needs a funded wallet, and
+  pays **one** transaction fee per batch (once a day, or whatever interval
+  you configure), no matter how many hashes were queued into it.
+- This is exactly how [`examples/webapp`](../../examples/webapp) uses it:
+  its `POST /api/notary/hash` endpoint is free for callers; only the server
+  itself (which holds the `wif`) pays anything, once a day, in `settle()`.
+
 ## Install
 
 ```bash
@@ -30,16 +46,28 @@ npm install btcnotar
 ## Quick start
 
 ```js
+import { BTCNotar } from "btcnotar";
+
+// No wif needed just to record — recording is free.
+const notary = new BTCNotar();
+
+await notary.addHash("2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881");
+```
+
+That's it for the recording side. Somewhere — typically one shared,
+long-running process — a `wif`-holding instance actually settles the queue:
+
+```js
 import { BTCNotar, FileStore } from "btcnotar";
 
 const notary = new BTCNotar({
   wif: process.env.BTCNOTAR_WIF,       // Bitcoin private key (WIF) that funds/signs anchor txs
   network: "mainnet",                   // or "testnet"
-  store: new FileStore({ filePath: "./.btcnotar/store.json" }),
+  store: new FileStore({ filePath: "./.btcnotar/store.json" }), // shared with the recording side
   intervalMs: 24 * 60 * 60 * 1000,      // settle once a day (default)
 });
 
-// 1. Queue hashes as documents come in (e.g. sha256 of a file)
+// 1. Queue hashes as documents come in (e.g. sha256 of a file) — still free
 await notary.addHash("2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881");
 
 // 2. Start automatic daily settlement (builds the Merkle tree + broadcasts
@@ -80,7 +108,7 @@ blockchain, and when/where" has one unambiguous answer.
 
 | option        | required | default             | description |
 |---------------|----------|---------------------|-------------|
-| `wif`         | yes      | —                   | Bitcoin private key (WIF) used to fund and sign anchor transactions |
+| `wif`         | only for `settle()`/`start()` | — | Bitcoin private key (WIF) used to fund and sign anchor transactions. Omit it entirely if this instance will only ever call `addHash()` |
 | `network`     | no       | `"mainnet"`         | `"mainnet"` or `"testnet"` |
 | `store`       | no       | `new MemoryStore()` | pending hashes + settled batches storage (see below) |
 | `provider`    | no       | `new MempoolProvider()` | chain data source (UTXOs, fees, broadcast, tx lookup) |
@@ -90,12 +118,14 @@ blockchain, and when/where" has one unambiguous answer.
 ### Instance methods
 
 - `addHash(hashHex)` — queue a hex-encoded hash for the next settlement.
+  **Free**: local storage only, no wallet or chain access involved.
 - `pendingCount()` — number of hashes waiting to be settled.
 - `settle()` — build a Merkle tree over everything pending and anchor its
   root in one `OP_RETURN` transaction right now. Returns the batch record
   (`{ batchId, merkleRoot, txid, hashes, proofs, ... }`), or `null` if
-  nothing was pending.
+  nothing was pending. **Requires `wif`** — throws otherwise.
 - `start({ intervalMs })` / `stop()` — automatic periodic settlement.
+  **Requires `wif`** — throws otherwise.
 - `getProof(hashHex)` — look up the stored proof + anchor info for a hash.
 - `verify(hashHex)` — cryptographically and on-chain verification (see above).
 - `refreshStatus(batchId)` — re-fetch a batch's transaction and update its
