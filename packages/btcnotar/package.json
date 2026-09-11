@@ -1,0 +1,49 @@
+{
+  "name": "btcnotar",
+  "version": "0.1.0",
+  "description": "Batch Bitcoin notarization: aggregate document hashes into a Merkle tree, anchor the root on-chain via OP_RETURN on a schedule, and generate per-hash proofs that can be verified independently against the live blockchain (transaction, block and date).",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "bin": {
+    "btcnotar": "./bin/cli.js"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "bitcoin",
+    "merkle-tree",
+    "notarization",
+    "timestamping",
+    "op_return",
+    "proof-of-existence",
+    "blockchain"
+  ],
+  "author": "Yordan Karparov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yordank/BTCNotar.git",
+    "directory": "packages/btcnotar"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bitcoinjs-lib": "^7.0.1",
+    "dotenv": "^17.2.3",
+    "ecpair": "^3.0.0",
+    "tiny-secp256k1": "^2.2.4"
+  }
+}

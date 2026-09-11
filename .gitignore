@@ -2,3 +2,5 @@ node_modules
 .env
 .breez-data
 .breez-sdk-data
+.data
+.btcnotar
