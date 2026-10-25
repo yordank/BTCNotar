@@ -10,6 +10,9 @@
   ],
   "scripts": {
     "test": "npm test --workspace btcnotar",
-    "start": "npm start --workspace btcnotar-webapp-demo"
+    "start": "npm start --workspace btcnotar-webapp-demo",
+    "agents": "node agents/start.js",
+    "agent:dev": "node agents/developer.js",
+    "agent:review": "node agents/reviewer.js"
   }
 }
