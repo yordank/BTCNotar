@@ -92,3 +92,8 @@ test("client rejects bad hashes before calling the server", async () => {
     const client = new BTCNotarClient({ serverUrl: "http://127.0.0.1:1" });
     await assert.rejects(() => client.submit("botev12"), /64 hex/);
 });
+
+test("client uses the free public server when no serverUrl is given", () => {
+    assert.equal(new BTCNotarClient().serverUrl, "https://proofofexistance-production.up.railway.app");
+    assert.equal(new BTCNotarClient({ serverUrl: "http://x/" }).serverUrl, "http://x");
+});

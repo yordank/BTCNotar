@@ -18,7 +18,7 @@ Own notary (needs BTCNOTAR_WIF and a funded address):
   btcnotar address           Print the notary's Bitcoin address
 
 Environment variables:
-  BTCNOTAR_SERVER    Public server URL for submit/check (or use --server <url>)
+  BTCNOTAR_SERVER    Server for submit/check (or --server <url>). Default: the free public server
   BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions [required]
   BTCNOTAR_NETWORK   "mainnet" or "testnet" (default: mainnet)
   BTCNOTAR_STORE     Path to the JSON store file (default: ./.btcnotar/store.json)
@@ -43,11 +43,7 @@ function toHash(input) {
 
 function buildClient(args) {
     const i = args.indexOf("--server");
-    const serverUrl = i >= 0 ? args[i + 1] : process.env.BTCNOTAR_SERVER;
-    if (!serverUrl) {
-        console.error("Missing server: set BTCNOTAR_SERVER or use --server <url>");
-        process.exit(1);
-    }
+    const serverUrl = (i >= 0 ? args[i + 1] : process.env.BTCNOTAR_SERVER) || undefined; // undefined = public server
     if (i >= 0) args.splice(i, 2);
     return new BTCNotarClient({ serverUrl, network: process.env.BTCNOTAR_NETWORK || "mainnet" });
 }

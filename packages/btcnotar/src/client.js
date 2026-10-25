@@ -8,6 +8,9 @@ export function sha256Hex(data) {
     return crypto.createHash("sha256").update(data).digest("hex");
 }
 
+/** The free public BTCNotar server (used when no serverUrl is given). */
+export const DEFAULT_SERVER_URL = "https://proofofexistance-production.up.railway.app";
+
 function checkHash(hashHex) {
     const hash = String(hashHex || "").trim().toLowerCase();
     if (!/^[0-9a-f]{64}$/.test(hash)) throw new Error(`hash must be 64 hex chars (SHA-256), got "${hashHex}"`);
@@ -18,7 +21,7 @@ function checkHash(hashHex) {
  * Client for a public BTCNotar server. No private key and no bitcoin needed:
  * the server anchors queued hashes on-chain and pays the fee.
  *
- *   const client = new BTCNotarClient({ serverUrl: "https://your-notary.example" });
+ *   const client = new BTCNotarClient();   // free public server by default
  *   await client.submit(sha256Hex("my document"));   // queued
  *   ...after the next settlement...
  *   await client.verify(hash);   // { valid, confirmed, txid, blockHeight, date }
@@ -27,8 +30,7 @@ function checkHash(hashHex) {
  * checks it against the blockchain itself (via mempool.space by default).
  */
 export class BTCNotarClient {
-    constructor({ serverUrl, network = "mainnet", provider, timeoutMs = 20_000 } = {}) {
-        if (!serverUrl) throw new Error("serverUrl is required");
+    constructor({ serverUrl = DEFAULT_SERVER_URL, network = "mainnet", provider, timeoutMs = 20_000 } = {}) {
         this.serverUrl = serverUrl.replace(/\/+$/, "");
         this.provider = provider || new MempoolProvider({ network });
         this.http = axios.create({ baseURL: this.serverUrl, timeout: timeoutMs, validateStatus: () => true });

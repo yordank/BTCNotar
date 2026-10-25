@@ -76,14 +76,15 @@ blockchain, and when/where" has one unambiguous answer.
 
 ## Free public server (no key, no bitcoin)
 
-Don't want to run your own notary? Send hashes to a public BTCNotar server.
+Don't want to run your own notary? Send hashes to the free public BTCNotar server
+(`https://proofofexistance-production.up.railway.app`, used by default).
 The server batches them and pays the fee (one transaction per batch).
 You verify the result yourself against the blockchain, so you don't have to trust the server.
 
 ```js
 import { BTCNotarClient, sha256Hex } from "btcnotar";
 
-const client = new BTCNotarClient({ serverUrl: "https://<notary-server>" });
+const client = new BTCNotarClient();   // or { serverUrl: "https://your-own-server" }
 
 const hash = sha256Hex(fs.readFileSync("contract.pdf"));
 await client.submit(hash);        // { status: "pending", nextSettleAt: "..." }
@@ -99,8 +100,9 @@ await client.verify(hash);        // { valid: true, confirmed: true, txid, block
 From the command line:
 
 ```
-npx btcnotar submit "any text or a sha256 hash" --server https://<notary-server>
-npx btcnotar check  "any text or a sha256 hash" --server https://<notary-server>
+npx btcnotar submit "any text or a sha256 hash"
+npx btcnotar check  "any text or a sha256 hash"
+# own server: add --server https://your-own-server
 ```
 
 ## API
