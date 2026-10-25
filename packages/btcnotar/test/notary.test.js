@@ -155,3 +155,47 @@ test("settleIfDue() never runs two settlements at the same time", async () => {
     assert.equal([a, b].filter(Boolean).length, 1);
     assert.equal(provider.broadcasted.size, 1);
 });
+
+test("anchorNow() anchors one hash immediately and returns a verifiable proof", async () => {
+    const provider = new FakeProvider();
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider });
+    const h = sha256hex("botev12");
+
+    const p = await notary.anchorNow(h);
+    assert.equal(p.alreadyAnchored, false);
+    assert.equal(provider.broadcasted.size, 1);
+    assert.equal((await notary.verify(h)).valid, true);
+
+    const again = await notary.anchorNow(h);
+    assert.equal(again.alreadyAnchored, true, "second call: no new tx");
+    assert.equal(again.txid, p.txid);
+    assert.equal(provider.broadcasted.size, 1);
+});
+
+test("settle() calls run one after another (no double spend)", async () => {
+    const provider = new FakeProvider();
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const realBroadcast = provider.broadcastTx.bind(provider);
+    provider.broadcastTx = async (raw) => {
+        inFlight++;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await new Promise((r) => setTimeout(r, 20));
+        inFlight--;
+        return realBroadcast(raw);
+    };
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider });
+    const [a, b] = await Promise.all([notary.anchorNow(sha256hex("a")), notary.anchorNow(sha256hex("b"))]);
+    assert.equal(maxInFlight, 1);
+    assert.equal((await notary.verify(sha256hex("a"))).valid, true);
+    assert.equal((await notary.verify(sha256hex("b"))).valid, true);
+    assert.ok(a.txid && b.txid);
+});
+
+test("addHash() does not queue the same hash twice", async () => {
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider: new FakeProvider() });
+    const a = await notary.addHash(sha256hex("botev12"));
+    const b = await notary.addHash(sha256hex("botev12").toUpperCase());
+    assert.equal(a.id, b.id);
+    assert.equal(await notary.pendingCount(), 1);
+});

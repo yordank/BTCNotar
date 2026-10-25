@@ -1,19 +1,13 @@
 import express from "express";
 import cors from "cors";
-import axios from "axios";
 import crypto from "node:crypto";
 import "dotenv/config";
-import * as bitcoin from "bitcoinjs-lib";
-import * as ecc from "tiny-secp256k1";
-import { ECPairFactory } from "ecpair";
-import { BTCNotar, FileStore, buildOpReturnScript } from "btcnotar";
+import { BTCNotar, FileStore } from "btcnotar";
 
 // Breez SDK Spark (CJS)
 import pkg from "@breeztech/breez-sdk-spark";
 const { connect, defaultConfig } = pkg;
 
-bitcoin.initEccLib(ecc);
-const ECPair = ECPairFactory(ecc);
 
 const app = express();
 app.set("etag", false); // stop 304 cache on some browsers
@@ -21,7 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-const PORT = 8787;
+// Railway (and most hosts) give the port in PORT.
+const PORT = Number(process.env.PORT || 8787);
 
 // ---------------- HARDCODED CONFIG ----------------
 
@@ -32,15 +27,17 @@ const BREEZ_MNEMONIC = process.env.BREEZ_MNEMONIC;
 // Send it in the "x-admin-key" header. If not set, admin endpoints are disabled.
 const ADMIN_KEY = process.env.ADMIN_KEY || "";
 
-// Mempool API for mainnet
-const MEMPOOL_API = "https://mempool.space/api";
 
 // Lightning price (sats) and expiry (seconds)
 const LN_PRICE_SATS = 1000;
 const LN_EXPIRY_SEC = 900;
 
 // storage dir for Breez SDK
-const BREEZ_STORAGE_DIR = "./.breez-data";
+// Where data is saved. On Railway mount a Volume (e.g. at /data) and set DATA_DIR=/data,
+// otherwise every redeploy deletes the queue and all proofs.
+const DATA_DIR = process.env.DATA_DIR || "";
+const BREEZ_STORAGE_DIR = DATA_DIR ? `${DATA_DIR}/breez-data` : "./.breez-data";
+const NOTARY_STORE_PATH = DATA_DIR ? `${DATA_DIR}/notary-store.json` : "./.data/notary-store.json";
 // --------------------------------------------------
 
 // In-memory invoice store: checkingId -> { paymentRequest, createdAt, amountSats, description }
@@ -117,7 +114,7 @@ const notary = OPRETURN_WIF_MAINNET
     ? new BTCNotar({
           wif: OPRETURN_WIF_MAINNET,
           network: "mainnet",
-          store: new FileStore({ filePath: "./.data/notary-store.json" }),
+          store: new FileStore({ filePath: NOTARY_STORE_PATH }),
           intervalMs: SETTLE_INTERVAL_MIN * 60 * 1000,
       })
     : null;
@@ -142,55 +139,6 @@ function isValidHashHex(s) {
     return /^[0-9a-f]{64}$/i.test(String(s || "").trim());
 }
 
-function createOpReturnTx({ keyPair, fromAddress, utxo, dataHex, feeSat, network }) {
-    const p2wpkh = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
-    const psbt = new bitcoin.Psbt({ network });
-
-    psbt.addInput({
-        hash: utxo.txid,
-        index: utxo.vout,
-        witnessUtxo: { script: p2wpkh.output, value: BigInt(utxo.value) },
-    });
-
-    // OP_RETURN output (0 sats)
-    psbt.addOutput({ script: buildOpReturnScript(Buffer.from(dataHex, "hex")), value: 0n });
-
-    // Dust guard (safe buffer)
-    const DUST_LIMIT = 1000n;
-
-    let change = BigInt(utxo.value) - BigInt(feeSat);
-    if (change <= 0n) throw new Error("Insufficient funds for fee");
-
-    if (change < DUST_LIMIT) change = 0n;
-    if (change > 0n) psbt.addOutput({ address: fromAddress, value: change });
-
-    psbt.signAllInputs(keyPair);
-    psbt.finalizeAllInputs();
-
-    const tx = psbt.extractTransaction();
-    return { rawHex: tx.toHex(), txid: tx.getId() };
-}
-
-async function fetchUtxos(address) {
-    const res = await axios.get(`${MEMPOOL_API}/address/${address}/utxo`);
-    return res.data;
-}
-
-async function fetchFeeRateSatVb() {
-    try {
-        const res = await axios.get(`${MEMPOOL_API}/v1/fees/recommended`);
-        return Number(res.data?.halfHourFee ?? 10);
-    } catch {
-        return 10;
-    }
-}
-
-async function broadcastTx(rawHex) {
-    const res = await axios.post(`${MEMPOOL_API}/tx`, rawHex, {
-        headers: { "Content-Type": "text/plain" },
-    });
-    return res.data; // txid
-}
 // ------------------------------------------------------
 
 // =========================
@@ -319,6 +267,8 @@ app.get("/api/ln/debug/latest", async (req, res) => {
 // Allowed only for: the admin (x-admin-key header) OR a paid Lightning invoice
 // (body.checkingId from /api/ln/invoice, after /api/ln/status said paid). One tx per payment.
 app.post("/api/opreturn", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
     const checkingId = String(req.body?.checkingId || "");
     let usedToken = false;
     try {
@@ -327,6 +277,10 @@ app.post("/api/opreturn", async (req, res) => {
             return res.status(400).json({ error: "hashHex must be 64 hex chars" });
         }
 
+        // Already on the blockchain: return the existing proof, no payment used, no new tx.
+        const existing = await n.getProof(hashHex);
+        if (existing) return res.json(anchorResponse(existing, true));
+
         if (!isAdmin(req)) {
             if (!checkingId || !consumePaidToken(checkingId)) {
                 return res.status(402).json({ error: "payment required: pay the Lightning invoice first" });
@@ -334,41 +288,26 @@ app.post("/api/opreturn", async (req, res) => {
             usedToken = true;
         }
 
-        const network = bitcoin.networks.bitcoin;
-        const keyPair = ECPair.fromWIF(OPRETURN_WIF_MAINNET, network);
-        const { address } = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
-
-        const utxos = await fetchUtxos(address);
-        if (!utxos.length) return res.status(400).json({ error: `No UTXOs. Fund address: ${address}` });
-
-        const feeRate = await fetchFeeRateSatVb();
-        const feeSat = Math.ceil(140 * feeRate);
-
-        const utxo = utxos[0];
-        const { rawHex, txid } = createOpReturnTx({
-            keyPair,
-            fromAddress: address,
-            utxo,
-            dataHex: hashHex,
-            feeSat,
-            network,
-        });
-
-        const broadcasted = await broadcastTx(rawHex);
-
-        res.json({
-            txid: broadcasted || txid,
-            address,
-            fee: feeSat,
-            feeRate,
-            explorer: `https://mempool.space/tx/${broadcasted || txid}`,
-        });
+        // Through the btcnotar library: Merkle batch (with anything else queued), proof saved.
+        const proof = await n.anchorNow(hashHex);
+        res.json(anchorResponse(proof, proof.alreadyAnchored));
     } catch (e) {
         // The customer paid but the tx failed: give the token back so they can retry.
         if (usedToken) paidTokens.set(checkingId, Date.now());
         res.status(500).json({ error: e?.response?.data || e?.message || String(e) });
     }
 });
+
+function anchorResponse(p, alreadyAnchored) {
+    return {
+        txid: p.txid,
+        merkleRoot: p.merkleRoot,
+        proof: p.proof,
+        alreadyAnchored,
+        explorer: `https://mempool.space/tx/${p.txid}`,
+        verify: `/api/notary/verify/${p.hash}`,
+    };
+}
 
 // =========================
 // Batch notarization (btcnotar library)
@@ -436,7 +375,7 @@ app.get("/api/notary/verify/:hash", async (req, res) => {
 app.get("/", (req, res) => res.redirect("/timestamp.html"));
 
 app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`✅ Server running on port ${PORT}, data in ${DATA_DIR || "./"}`);
     console.log(`⚡ LN: Breez SDK bolt11Invoice + listPayments polling`);
 });
 

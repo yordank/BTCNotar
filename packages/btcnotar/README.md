@@ -97,6 +97,7 @@ blockchain, and when/where" has one unambiguous answer.
   nothing was pending.
 - `start({ intervalMs })` / `stop()` — automatic settlement: checks every minute and anchors when the oldest pending hash is `intervalMs` old. Survives restarts (uses the stored `addedAt`).
 - `settleIfDue()` — the check `start()` runs; anchors only if something has waited `intervalMs`.
+- `anchorNow(hash)` — anchor one hash immediately (together with anything already queued) and return its proof. If the hash is already anchored, returns the existing proof without a new transaction.
 - `getProof(hashHex)` — look up the stored proof + anchor info for a hash.
 - `verify(hashHex)` — cryptographically and on-chain verification (see above).
 - `refreshStatus(batchId)` — re-fetch a batch's transaction and update its
