@@ -1,206 +1,240 @@
 # btcnotar
 
-Batch Bitcoin notarization for Node.js.
+**Prove that a text or a file existed at a certain time — using the Bitcoin blockchain.**
 
-`btcnotar` collects document hashes, combines them into a **Merkle tree**,
-and anchors only the tree's root on the Bitcoin blockchain via a single
-`OP_RETURN` transaction — automatically, on a schedule (once a day by
-default). Each individual hash gets back a small **inclusion proof** that
-lets anyone later prove — unambiguously, against the live chain, down to
-the transaction id, block and date — that their document was notarized,
-without needing the rest of the batch.
-
-## Why batching
-
-Anchoring one hash per transaction is expensive and doesn't scale. Batching
-thousands of hashes into one Merkle root per settlement means:
-
-- **One on-chain transaction settles an unlimited number of documents.**
-- **Cheap**: fees are paid once per batch, not per document.
-- **Reversible / verifiable**: given only your original hash and its proof,
-  you can recompute the Merkle root and confirm it matches what's actually
-  on-chain — no trust in the notary's database required.
-
-## Install
+- **Free.** No Bitcoin, no wallet, no key. The public server pays the fee.
+- **Private.** Only the SHA-256 hash is sent. Your file never leaves your computer.
+- **Trustless.** `verify()` checks the proof directly on the blockchain, not on our server.
 
 ```bash
 npm install btcnotar
 ```
 
-## Quick start
+---
+
+## Easy examples
+
+All examples use the free public server. Save them as `.mjs` files and run with `node`.
+
+### 1. Notarize a text
 
 ```js
-import { BTCNotar, FileStore } from "btcnotar";
-
-const notary = new BTCNotar({
-  wif: process.env.BTCNOTAR_WIF,       // Bitcoin private key (WIF) that funds/signs anchor txs
-  network: "mainnet",                   // or "testnet"
-  store: new FileStore({ filePath: "./.btcnotar/store.json" }),
-  intervalMs: 24 * 60 * 60 * 1000,      // settle once a day (default)
-});
-
-// 1. Queue hashes as documents come in (e.g. sha256 of a file)
-await notary.addHash("2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881");
-
-// 2. Start automatic daily settlement (builds the Merkle tree + broadcasts
-//    one OP_RETURN transaction anchoring the root)
-notary.start();
-
-// ... later, anywhere, even in a different process that only has the hash ...
-
-const proof = await notary.getProof(hash);
-// { hash, merkleRoot, proof, txid, batchId, blockHeight, blockHash, blockTime, ... }
-
-const result = await notary.verify(hash);
-// {
-//   valid: true,
-//   confirmed: true,
-//   txid: "…",
-//   blockHeight: 912345,
-//   blockHash: "…",
-//   date: "2026-09-10T00:00:00.000Z",
-//   merkleRoot: "…",
-// }
-```
-
-`verify()` does two independent checks before it reports `valid: true`:
-
-1. **Cryptographic**: recomputes the Merkle root from the hash + its proof
-   and checks it equals the stored root.
-2. **On-chain**: fetches the anchoring transaction live from the blockchain
-   and confirms its `OP_RETURN` output actually carries that same root.
-
-Only when both agree is the hash reported as anchored — together with the
-transaction id, block hash/height and date, so "is this document on the
-blockchain, and when/where" has one unambiguous answer.
-
-## Free public server (no key, no bitcoin)
-
-Don't want to run your own notary? Send hashes to the free public BTCNotar server
-(`https://proofofexistance-production.up.railway.app`, used by default).
-The server batches them and pays the fee (one transaction per batch).
-You verify the result yourself against the blockchain, so you don't have to trust the server.
-
-```js
+// notarize-text.mjs
 import { BTCNotarClient, sha256Hex } from "btcnotar";
 
-const client = new BTCNotarClient();   // or { serverUrl: "https://your-own-server" }
+const client = new BTCNotarClient();
+const hash = sha256Hex("Hello, Bitcoin!");
 
+const result = await client.submit(hash);
+console.log(result);
+// { status: "pending", hash: "...", nextSettleAt: "2026-10-25T15:00:00.000Z" }
+```
+
+`pending` means: your hash is in the queue. It goes on the blockchain at `nextSettleAt` (about 1 hour).
+
+### 2. Check it later
+
+```js
+// check-text.mjs
+import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();
+const result = await client.verify(sha256Hex("Hello, Bitcoin!"));
+
+if (result.valid) {
+  console.log("On the blockchain!");
+  console.log("Date: ", result.date);
+  console.log("Block:", result.blockHeight);
+  console.log("Tx:   ", `https://mempool.space/tx/${result.txid}`);
+} else {
+  console.log("Not yet:", result.reason); // "pending" = still waiting
+}
+```
+
+### 3. Notarize a file
+
+```js
+// notarize-file.mjs
+import fs from "node:fs";
+import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();
 const hash = sha256Hex(fs.readFileSync("contract.pdf"));
-await client.submit(hash);        // { status: "pending", nextSettleAt: "..." }
 
-// after the next settlement (see nextSettleAt):
-await client.verify(hash);        // { valid: true, confirmed: true, txid, blockHeight, date }
+console.log("SHA-256:", hash);
+console.log(await client.submit(hash));
 ```
 
-- `submit(hash)` — add the hash to the server queue.
-- `getProof(hash)` — proof record, `{ status: "pending" }` while waiting, or `null`.
-- `verify(hash)` — gets the proof from the server and checks it on-chain (mempool.space by default, or pass your own `provider`).
+Keep the file **exactly as it is**. If one byte changes, the hash changes and the proof will not match.
 
-From the command line:
+### 4. Many texts, save results, check later
 
+```js
+// many.mjs
+import fs from "node:fs";
+import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();
+const texts = ["first text", "second text", "third text"];
+
+const results = [];
+for (const text of texts) {
+  const hash = sha256Hex(text);
+  const r = await client.submit(hash);
+  results.push({ text, hash, status: r.status, nextSettleAt: r.nextSettleAt });
+}
+
+fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
+console.log("Saved to results.json");
 ```
-npx btcnotar submit "any text or a sha256 hash"
-npx btcnotar check  "any text or a sha256 hash"
-# own server: add --server https://your-own-server
+
+```js
+// check-many.mjs
+import fs from "node:fs";
+import { BTCNotarClient } from "btcnotar";
+
+const client = new BTCNotarClient();
+const results = JSON.parse(fs.readFileSync("results.json", "utf8"));
+
+for (const item of results) {
+  const r = await client.verify(item.hash);
+  console.log(item.text, "->", r.valid ? `YES, block ${r.blockHeight}, ${r.date}` : `not yet (${r.reason})`);
+}
 ```
+
+All texts sent in the same hour go into **one** Bitcoin transaction.
+
+### 5. Command line (no code)
+
+```bash
+npx btcnotar submit "Hello, Bitcoin!"
+npx btcnotar check  "Hello, Bitcoin!"
+```
+
+You can give a text or a SHA-256 hash (64 hex characters).
+
+---
+
+## How long does it take?
+
+| Step | Time |
+|---|---|
+| `submit()` | instant — status `pending` |
+| Hash goes into a Bitcoin transaction | at `nextSettleAt` (about every hour) |
+| Transaction is in a block | about 10 minutes later |
+
+After the transaction is sent, `verify()` returns `valid: true`.
+`confirmed: false` means it is still waiting for a block. `confirmed: true` means it is in a block.
+
+## What `verify()` returns
+
+```js
+{ valid: true, confirmed: true, txid: "...", blockHeight: 920123, date: "2026-10-25T15:08:12.000Z", merkleRoot: "..." }
+{ valid: false, reason: "pending", nextSettleAt: "..." }   // waiting in the queue
+{ valid: false, reason: "unknown-hash" }                    // never sent
+{ valid: false, reason: "merkle-proof-mismatch" }           // proof is wrong
+{ valid: false, reason: "on-chain-data-mismatch" }          // blockchain has different data
+```
+
+## Why you don't need to trust the server
+
+`verify()` downloads the proof from the server, then:
+
+1. rebuilds the Merkle root from your hash and the proof, and
+2. reads the real Bitcoin transaction from [mempool.space](https://mempool.space) and checks that its `OP_RETURN` contains that root.
+
+If the server lies, the check fails.
+
+---
+
+## Run your own notary (with your own Bitcoin)
+
+If you want your own server, use `BTCNotar` with your own key (WIF) and a funded address.
+
+```js
+import { BTCNotar, FileStore, sha256Hex } from "btcnotar";
+
+const notary = new BTCNotar({
+  wif: process.env.BTCNOTAR_WIF,                       // your private key (WIF)
+  store: new FileStore({ filePath: "./store.json" }),  // keeps queue and proofs
+  intervalMs: 60 * 60 * 1000,                          // anchor every hour (if queue is not empty)
+});
+
+console.log("Fund this address:", notary.address);
+
+await notary.addHash(sha256Hex("my document"));  // add to queue
+notary.start();                                  // anchors automatically
+
+// or right now:
+const proof = await notary.anchorNow(sha256Hex("urgent document"));
+console.log(proof.txid);
+
+// check:
+console.log(await notary.verify(sha256Hex("my document")));
+```
+
+Command line for your own notary:
+
+```bash
+export BTCNOTAR_WIF=...                  # required
+npx btcnotar address                     # address to fund
+npx btcnotar add <hash>                  # add to queue
+npx btcnotar settle                      # send the transaction now
+npx btcnotar verify <hash>               # check on the blockchain
+```
+
+---
 
 ## API
 
-### `new BTCNotar(options)`
+### `new BTCNotarClient(options?)` — free public server
 
-| option        | required | default             | description |
-|---------------|----------|---------------------|-------------|
-| `wif`         | yes      | —                   | Bitcoin private key (WIF) used to fund and sign anchor transactions |
-| `network`     | no       | `"mainnet"`         | `"mainnet"` or `"testnet"` |
-| `store`       | no       | `new MemoryStore()` | pending hashes + settled batches storage (see below) |
-| `provider`    | no       | `new MempoolProvider()` | chain data source (UTXOs, fees, broadcast, tx lookup) |
-| `feeRateSatVb`| no       | fetched live        | fixed fee rate override (sat/vB) |
-| `intervalMs`  | no       | `86400000` (24h)    | used by `start()`: a batch is anchored once the oldest pending hash has waited this long (no tx while the queue is empty) |
+| option | default | description |
+|---|---|---|
+| `serverUrl` | public server | your own server URL |
+| `network` | `"mainnet"` | `"mainnet"` or `"testnet"` |
+| `provider` | `MempoolProvider` | where `verify()` reads the blockchain |
 
-### Instance methods
+- `submit(hash)` — add a hash to the queue → `{ status, hash, addedAt, nextSettleAt }`
+- `verify(hash)` — check on the blockchain → see [What verify() returns](#what-verify-returns)
+- `getProof(hash)` — raw proof, `{ status: "pending" }`, or `null`
 
-- `addHash(hashHex)` — queue a hex-encoded hash for the next settlement.
-- `pendingCount()` — number of hashes waiting to be settled.
-- `settle()` — build a Merkle tree over everything pending and anchor its
-  root in one `OP_RETURN` transaction right now. Returns the batch record
-  (`{ batchId, merkleRoot, txid, hashes, proofs, ... }`), or `null` if
-  nothing was pending.
-- `start({ intervalMs })` / `stop()` — automatic settlement: checks every minute and anchors when the oldest pending hash is `intervalMs` old. Survives restarts (uses the stored `addedAt`).
-- `settleIfDue()` — the check `start()` runs; anchors only if something has waited `intervalMs`.
-- `getStatus(hash)` — `{ status: "anchored", ...proof }`, `{ status: "pending", addedAt, nextSettleAt }` or `null`.
-- `anchorNow(hash)` — anchor one hash immediately (together with anything already queued) and return its proof. If the hash is already anchored, returns the existing proof without a new transaction.
-- `getProof(hashHex)` — look up the stored proof + anchor info for a hash.
-- `verify(hashHex)` — cryptographically and on-chain verification (see above).
-- `refreshStatus(batchId)` — re-fetch a batch's transaction and update its
-  confirmation / block info.
+### `sha256Hex(textOrBuffer)`
 
-### `MerkleTree`
+SHA-256 of a string (UTF-8) or a Buffer, as a hex string.
 
-The underlying Merkle tree, usable standalone:
+### `new BTCNotar(options)` — your own notary
 
-```js
-import { MerkleTree } from "btcnotar";
+| option | default | description |
+|---|---|---|
+| `wif` | — (required) | private key that pays and signs |
+| `network` | `"mainnet"` | `"mainnet"` or `"testnet"` |
+| `store` | `MemoryStore` (lost on exit) | use `FileStore({ filePath })` to keep data |
+| `intervalMs` | 24 hours | `start()` anchors when the oldest queued hash is this old |
+| `feeRateSatVb` | live from mempool.space | fixed fee (sat/vB) |
+| `provider` | `MempoolProvider` | blockchain backend |
 
-const tree = new MerkleTree([hashA, hashB, hashC]);
-tree.root;                       // hex string
-const proof = tree.getProof(0);  // inclusion proof for hashA
-MerkleTree.verifyProof(hashA, proof, tree.root); // true
-```
+Methods: `address`, `addHash(hash)`, `pendingCount()`, `settle()`, `anchorNow(hash)`, `start()`, `stop()`, `settleIfDue()`, `getStatus(hash)`, `getProof(hash)`, `verify(hash)`, `refreshStatus(batchId)`.
 
-Leaves are domain-separated from internal nodes (distinct hash prefixes),
-and an unpaired node at the end of a level is carried up unchanged rather
-than duplicated — this avoids both the classic leaf/node confusion forgery
-and the Bitcoin-style duplicate-leaf ambiguity (CVE-2012-2459).
+### Other exports
 
-### Storage
+`MerkleTree`, `verifyProof(hash, proof, provider)`, `MemoryStore`, `FileStore`, `MempoolProvider`, `DEFAULT_SERVER_URL`.
 
-`MemoryStore` (default, non-persistent) and `FileStore` (JSON file on disk)
-are included and share the same interface: `addPending`, `listPending`,
-`clearPending`, `saveBatch`, `getBatch`, `findBatchByHash`, `listBatches`.
-Implement the same interface against a real database for multi-process or
-production use.
+---
 
-### Chain provider
+## How it looks on the blockchain
 
-`MempoolProvider` talks to the public [mempool.space](https://mempool.space)
-REST API for UTXOs, fee estimation, broadcasting and transaction lookup.
-Supply your own object implementing `fetchUtxos`, `fetchFeeRateSatVb`,
-`broadcastTx`, `fetchTransaction` to use a different backend (e.g. a local
-`bitcoind` or Electrum server).
-
-## CLI
-
-The package also installs a `btcnotar` command:
-
-```bash
-export BTCNOTAR_WIF=...        # required
-export BTCNOTAR_NETWORK=mainnet
-export BTCNOTAR_STORE=./.btcnotar/store.json
-
-npx btcnotar add <hash>
-npx btcnotar settle
-npx btcnotar proof <hash>
-npx btcnotar verify <hash>
-npx btcnotar address
-```
-
-`btcnotar settle` is handy if you'd rather trigger settlement from an
-external scheduler (system cron, a serverless cron trigger) instead of the
-built-in `start()` interval.
-
-## How anchoring works on-chain
-
-Each settlement broadcasts one transaction with a zero-value `OP_RETURN`
-output carrying:
+Every batch is one transaction with an `OP_RETURN` output:
 
 ```
-"BTN1" (4 bytes, protocol magic)  ||  Merkle root (32 bytes)
+42544e31 + <Merkle root, 32 bytes>
+ "BTN1"
 ```
 
-36 bytes total, well within Bitcoin's 80-byte `OP_RETURN` limit. The magic
-prefix lets `verify()` recognize a BTCNotar anchor (and reject unrelated
-`OP_RETURN` data) before trusting its contents as a Merkle root.
+Your hash is not visible on the blockchain — only the Merkle root of all hashes in the batch.
+The proof connects your hash to that root.
+
+Merkle tree: leaf = `sha256(0x00 || hash)`, node = `sha256(0x01 || left || right)`, an odd node is moved up unchanged.
 
 ## License
 
