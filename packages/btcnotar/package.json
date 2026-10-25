@@ -1,7 +1,7 @@
 {
   "name": "btcnotar",
-  "version": "0.2.0",
-  "description": "Batch Bitcoin notarization: aggregate document hashes into a Merkle tree, anchor the root on-chain via OP_RETURN on a schedule, and generate per-hash proofs that can be verified independently against the live blockchain (transaction, block and date).",
+  "version": "0.2.1",
+  "description": "Free Bitcoin notarization: prove a text or file existed at a certain time. Send a SHA-256 hash, get a proof you can verify yourself on the Bitcoin blockchain (Merkle tree + OP_RETURN).",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -30,7 +30,9 @@
     "timestamping",
     "op_return",
     "proof-of-existence",
-    "blockchain"
+    "blockchain",
+    "timestamp",
+    "sha256"
   ],
   "author": "Yordan Karparov",
   "license": "MIT",
@@ -45,5 +47,6 @@
     "dotenv": "^17.2.3",
     "ecpair": "^3.0.0",
     "tiny-secp256k1": "^2.2.4"
-  }
+  },
+  "homepage": "https://github.com/yordank/BTCNotar#readme"
 }
