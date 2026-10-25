@@ -1,6 +1,6 @@
 {
   "name": "btcnotar",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Free Bitcoin notarization: prove a text or file existed at a certain time. Send a SHA-256 hash, get a proof you can verify yourself on the Bitcoin blockchain (Merkle tree + OP_RETURN).",
   "type": "module",
   "main": "index.js",
