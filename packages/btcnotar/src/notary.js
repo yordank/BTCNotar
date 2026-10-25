@@ -10,6 +10,8 @@ bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// Size of our tx: 1 P2WPKH input + OP_RETURN (36 bytes) + change ≈ 157 vB.
+const ANCHOR_TX_VBYTES = 160;
 
 function isHex(s) {
     return typeof s === "string" && /^[0-9a-fA-F]+$/.test(s) && s.length % 2 === 0;
@@ -45,7 +47,10 @@ export class BTCNotar {
     /** Queue a document hash for the next settlement batch. */
     async addHash(hashHex) {
         if (!isHex(hashHex)) throw new Error(`hash must be a hex string, got "${hashHex}"`);
-        const entry = { id: crypto.randomUUID(), hash: hashHex.toLowerCase(), addedAt: new Date().toISOString() };
+        const hash = hashHex.toLowerCase();
+        const queued = (await this.store.listPending()).find((p) => p.hash === hash);
+        if (queued) return queued; // already waiting: don't add it twice
+        const entry = { id: crypto.randomUUID(), hash, addedAt: new Date().toISOString() };
         await this.store.addPending(entry);
         return entry;
     }
@@ -60,7 +65,15 @@ export class BTCNotar {
      * root on-chain in one OP_RETURN transaction. Returns the settled batch
      * (including a proof per hash), or null if there was nothing pending.
      */
-    async settle() {
+    settle() {
+        // Run settlements one after another (timer + manual call at the same time
+        // would otherwise try to spend the same UTXO twice).
+        const run = (this._settleChain || Promise.resolve()).then(() => this._settle());
+        this._settleChain = run.catch(() => {});
+        return run;
+    }
+
+    async _settle() {
         const pending = await this.store.listPending();
         if (!pending.length) return null;
 
@@ -72,7 +85,7 @@ export class BTCNotar {
         if (!utxos.length) throw new Error(`No UTXOs available. Fund address: ${this.address}`);
 
         const feeRate = this.feeRateSatVb || (await this.provider.fetchFeeRateSatVb());
-        const feeSat = Math.ceil(140 * feeRate);
+        const feeSat = Math.ceil(ANCHOR_TX_VBYTES * feeRate);
         const utxo = utxos[0];
 
         const payload = encodeOpReturnPayload(merkleRoot);
@@ -123,6 +136,23 @@ export class BTCNotar {
             this.settleIfDue().catch((err) => console.error("[btcnotar] scheduled settle() failed:", err));
         }, checkMs);
         this._timer.unref?.();
+    }
+
+    /**
+     * Anchor one hash right now (plus anything else already queued) and
+     * return its proof. If the hash is already anchored, returns the existing
+     * proof without a new transaction (`alreadyAnchored: true`).
+     */
+    async anchorNow(hashHex) {
+        if (!isHex(hashHex)) throw new Error(`hash must be a hex string, got "${hashHex}"`);
+        const hash = hashHex.toLowerCase();
+        const existing = await this.getProof(hash);
+        if (existing) return { ...existing, alreadyAnchored: true };
+        await this.addHash(hash);
+        await this.settle();
+        const proof = await this.getProof(hash);
+        if (!proof) throw new Error("anchoring failed: hash not found in any batch");
+        return { ...proof, alreadyAnchored: false };
     }
 
     /** Settle only if the oldest pending hash has waited at least `intervalMs`. Returns the batch or null. */
