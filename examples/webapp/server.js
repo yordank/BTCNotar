@@ -28,6 +28,9 @@ const PORT = 8787;
 const OPRETURN_WIF_MAINNET = process.env.OPRETURN_WIF_MAINNET;
 const BREEZ_API_KEY = process.env.BREEZ_API_KEY;
 const BREEZ_MNEMONIC = process.env.BREEZ_MNEMONIC;
+// Secret key for admin-only endpoints (manual transactions, balance, debug).
+// Send it in the "x-admin-key" header. If not set, admin endpoints are disabled.
+const ADMIN_KEY = process.env.ADMIN_KEY || "";
 
 // Mempool API for mainnet
 const MEMPOOL_API = "https://mempool.space/api";
@@ -42,6 +45,41 @@ const BREEZ_STORAGE_DIR = "./.breez-data";
 
 // In-memory invoice store: checkingId -> { paymentRequest, createdAt, amountSats, description }
 const invoices = new Map();
+
+// Paid invoices that can still be used for ONE /api/opreturn call: checkingId -> paidAt
+const paidTokens = new Map();
+const PAID_TOKEN_TTL_MS = 30 * 60 * 1000;
+
+// --------------- Admin auth ---------------
+function sha256(s) {
+    return crypto.createHash("sha256").update(String(s)).digest();
+}
+
+function isAdmin(req) {
+    if (!ADMIN_KEY) return false;
+    const given = req.get("x-admin-key") || "";
+    return crypto.timingSafeEqual(sha256(given), sha256(ADMIN_KEY));
+}
+
+function requireAdmin(req, res) {
+    if (!ADMIN_KEY) {
+        res.status(503).json({ error: "admin endpoints disabled (ADMIN_KEY not set)" });
+        return false;
+    }
+    if (!isAdmin(req)) {
+        res.status(401).json({ error: "unauthorized" });
+        return false;
+    }
+    return true;
+}
+
+// Take a paid, unused invoice token (one-time). Returns true if it was valid.
+function consumePaidToken(checkingId) {
+    const paidAt = paidTokens.get(checkingId);
+    if (!paidAt) return false;
+    paidTokens.delete(checkingId);
+    return Date.now() - paidAt < PAID_TOKEN_TTL_MS;
+}
 
 // --------------- Breez SDK singleton ---------------
 let sdkPromise = null;
@@ -163,12 +201,9 @@ app.post("/api/ln/invoice", async (req, res) => {
     try {
         const sdk = await getSdk();
 
-        const amountSats = Number(req.body?.amountSat ?? LN_PRICE_SATS);
-        const expirySecs = Number(req.body?.expirySec ?? LN_EXPIRY_SEC);
-
-        if (!Number.isFinite(amountSats) || amountSats <= 0) {
-            return res.status(400).json({ error: "amountSat must be a positive number" });
-        }
+        // Fixed price: the client cannot choose a cheaper amount.
+        const amountSats = LN_PRICE_SATS;
+        const expirySecs = LN_EXPIRY_SEC;
 
         // Generate checkingId first and embed into description for reliable matching
         const checkingId = crypto.randomUUID();
@@ -246,8 +281,10 @@ app.get("/api/ln/status/:checkingId", async (req, res) => {
 
         if (!found) return res.json({ paid: false });
 
-        // One-time consume: mark paid then remove from map
+        // One-time consume: mark paid then remove from map.
+        // The paid id can now be used once for /api/opreturn.
         invoices.delete(id);
+        paidTokens.set(id, Date.now());
         return res.json({
             paid: true,
             status: String(found.status),
@@ -260,6 +297,7 @@ app.get("/api/ln/status/:checkingId", async (req, res) => {
 
 // Optional debug: see latest payments quickly
 app.get("/api/ln/debug/latest", async (req, res) => {
+    if (!requireAdmin(req, res)) return;
     try {
         const sdk = await getSdk();
         const list = await sdk.listPayments({});
@@ -275,11 +313,22 @@ app.get("/api/ln/debug/latest", async (req, res) => {
 // =========================
 // OP_RETURN (Mainnet, instant single-hash anchor)
 // =========================
+// Allowed only for: the admin (x-admin-key header) OR a paid Lightning invoice
+// (body.checkingId from /api/ln/invoice, after /api/ln/status said paid). One tx per payment.
 app.post("/api/opreturn", async (req, res) => {
+    const checkingId = String(req.body?.checkingId || "");
+    let usedToken = false;
     try {
         const hashHex = String(req.body?.hashHex || "").trim().toLowerCase();
         if (!isValidHashHex(hashHex)) {
             return res.status(400).json({ error: "hashHex must be 64 hex chars" });
+        }
+
+        if (!isAdmin(req)) {
+            if (!checkingId || !consumePaidToken(checkingId)) {
+                return res.status(402).json({ error: "payment required: pay the Lightning invoice first" });
+            }
+            usedToken = true;
         }
 
         const network = bitcoin.networks.bitcoin;
@@ -312,6 +361,8 @@ app.post("/api/opreturn", async (req, res) => {
             explorer: `https://mempool.space/tx/${broadcasted || txid}`,
         });
     } catch (e) {
+        // The customer paid but the tx failed: give the token back so they can retry.
+        if (usedToken) paidTokens.set(checkingId, Date.now());
         res.status(500).json({ error: e?.response?.data || e?.message || String(e) });
     }
 });
@@ -340,6 +391,7 @@ app.post("/api/notary/hash", async (req, res) => {
 // POST /api/notary/settle
 // Force-settle the current batch immediately (normally happens once a day automatically).
 app.post("/api/notary/settle", async (req, res) => {
+    if (!requireAdmin(req, res)) return;
     const n = requireNotary(res);
     if (!n) return;
     try {
@@ -386,6 +438,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/api/balance", async (req, res) => {
+    if (!requireAdmin(req, res)) return;
     try {
         const sdk = await getSdk();
 

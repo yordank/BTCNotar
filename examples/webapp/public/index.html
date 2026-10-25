@@ -1371,7 +1371,7 @@
                 payMsg.textContent = t("paid");
 
                 // 3) write opreturn
-                const out = await postJson("/api/opreturn", { hashHex: hash, network: "mainnet" });
+                const out = await postJson("/api/opreturn", { hashHex: hash, checkingId: inv.checking_id, network: "mainnet" });
 
                 // 4) update UI
                 txid.value = out.txid || "";
