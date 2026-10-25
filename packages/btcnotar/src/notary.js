@@ -109,14 +109,35 @@ export class BTCNotar {
         return batch;
     }
 
-    /** Start automatic settlement every `intervalMs` (default: once a day). */
+    /**
+     * Start automatic settlement. A batch is anchored as soon as the OLDEST
+     * pending hash has waited `intervalMs` (default: one day). Nothing is sent
+     * while the queue is empty. Because the wait is measured from the stored
+     * `addedAt` time, a server restart does not reset it.
+     */
     start({ intervalMs } = {}) {
         if (this._timer) return;
-        const ms = intervalMs || this.intervalMs;
+        if (intervalMs) this.intervalMs = intervalMs;
+        const checkMs = Math.min(this.intervalMs, 60_000);
         this._timer = setInterval(() => {
-            this.settle().catch((err) => console.error("[btcnotar] scheduled settle() failed:", err));
-        }, ms);
+            this.settleIfDue().catch((err) => console.error("[btcnotar] scheduled settle() failed:", err));
+        }, checkMs);
         this._timer.unref?.();
+    }
+
+    /** Settle only if the oldest pending hash has waited at least `intervalMs`. Returns the batch or null. */
+    async settleIfDue(now = Date.now()) {
+        if (this._settling) return null;
+        this._settling = true; // set before any await, so two calls can never both pass
+        try {
+            const pending = await this.store.listPending();
+            if (!pending.length) return null;
+            const oldest = Math.min(...pending.map((p) => Date.parse(p.addedAt) || now));
+            if (now - oldest < this.intervalMs) return null;
+            return await this.settle();
+        } finally {
+            this._settling = false;
+        }
     }
 
     stop() {

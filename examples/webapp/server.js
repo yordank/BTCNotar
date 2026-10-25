@@ -108,20 +108,23 @@ async function getSdk() {
 
 // ================================================================
 // Batch notarization (btcnotar library): hashes get queued here and
-// anchored together, once a day, in a single Merkle-rooted OP_RETURN tx.
+// anchored together (every SETTLE_INTERVAL_MIN, default 60 min) in a single Merkle-rooted OP_RETURN tx.
 // ================================================================
+// Queued hashes are anchored once the oldest one has waited this long (no tx if the queue is empty).
+const SETTLE_INTERVAL_MIN = Number(process.env.SETTLE_INTERVAL_MIN || 60);
+
 const notary = OPRETURN_WIF_MAINNET
     ? new BTCNotar({
           wif: OPRETURN_WIF_MAINNET,
           network: "mainnet",
           store: new FileStore({ filePath: "./.data/notary-store.json" }),
-          intervalMs: 24 * 60 * 60 * 1000, // once a day
+          intervalMs: SETTLE_INTERVAL_MIN * 60 * 1000,
       })
     : null;
 
 if (notary) {
     notary.start();
-    console.log(`⛓️  BTCNotar batching active — address ${notary.address}, settling every 24h`);
+    console.log(`⛓️  BTCNotar batching active — address ${notary.address}, settling every ${SETTLE_INTERVAL_MIN} min if hashes are queued`);
 } else {
     console.warn("⚠️  OPRETURN_WIF_MAINNET not set — batch notarization endpoints are disabled");
 }
@@ -372,7 +375,7 @@ app.post("/api/opreturn", async (req, res) => {
 // =========================
 
 // POST /api/notary/hash  body: { hashHex }
-// Queue a hash for the next automatic (daily) settlement.
+// Queue a hash for the next automatic settlement.
 app.post("/api/notary/hash", async (req, res) => {
     const n = requireNotary(res);
     if (!n) return;
@@ -389,7 +392,7 @@ app.post("/api/notary/hash", async (req, res) => {
 });
 
 // POST /api/notary/settle
-// Force-settle the current batch immediately (normally happens once a day automatically).
+// Force-settle the current batch immediately (normally happens automatically).
 app.post("/api/notary/settle", async (req, res) => {
     if (!requireAdmin(req, res)) return;
     const n = requireNotary(res);

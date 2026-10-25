@@ -122,3 +122,36 @@ test("settle() is a no-op when nothing is pending", async () => {
     const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider: new FakeProvider() });
     assert.equal(await notary.settle(), null);
 });
+
+test("settleIfDue() waits until the oldest pending hash is intervalMs old", async () => {
+    const HOUR = 60 * 60 * 1000;
+    const provider = new FakeProvider();
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider, intervalMs: HOUR });
+
+    assert.equal(await notary.settleIfDue(), null, "empty queue: no tx");
+
+    const entry = await notary.addHash(sha256hex("botev12"));
+    const added = Date.parse(entry.addedAt);
+    await notary.addHash(sha256hex("botevpd1912"));
+
+    assert.equal(await notary.settleIfDue(added + HOUR - 1000), null, "not yet due");
+    assert.equal(provider.broadcasted.size, 0);
+
+    const batch = await notary.settleIfDue(added + HOUR);
+    assert.ok(batch, "due: batch anchored");
+    assert.equal(batch.hashes.length, 2);
+    assert.equal(provider.broadcasted.size, 1);
+    assert.equal(await notary.pendingCount(), 0);
+
+    assert.equal(await notary.settleIfDue(added + 2 * HOUR), null, "queue empty again: no tx");
+});
+
+test("settleIfDue() never runs two settlements at the same time", async () => {
+    const provider = new FakeProvider();
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider, intervalMs: 1 });
+    await notary.addHash(sha256hex("x"));
+    const later = Date.now() + 10;
+    const [a, b] = await Promise.all([notary.settleIfDue(later), notary.settleIfDue(later)]);
+    assert.equal([a, b].filter(Boolean).length, 1);
+    assert.equal(provider.broadcasted.size, 1);
+});
