@@ -85,7 +85,7 @@ blockchain, and when/where" has one unambiguous answer.
 | `store`       | no       | `new MemoryStore()` | pending hashes + settled batches storage (see below) |
 | `provider`    | no       | `new MempoolProvider()` | chain data source (UTXOs, fees, broadcast, tx lookup) |
 | `feeRateSatVb`| no       | fetched live        | fixed fee rate override (sat/vB) |
-| `intervalMs`  | no       | `86400000` (24h)    | automatic settlement interval used by `start()` |
+| `intervalMs`  | no       | `86400000` (24h)    | used by `start()`: a batch is anchored once the oldest pending hash has waited this long (no tx while the queue is empty) |
 
 ### Instance methods
 
@@ -95,7 +95,8 @@ blockchain, and when/where" has one unambiguous answer.
   root in one `OP_RETURN` transaction right now. Returns the batch record
   (`{ batchId, merkleRoot, txid, hashes, proofs, ... }`), or `null` if
   nothing was pending.
-- `start({ intervalMs })` / `stop()` — automatic periodic settlement.
+- `start({ intervalMs })` / `stop()` — automatic settlement: checks every minute and anchors when the oldest pending hash is `intervalMs` old. Survives restarts (uses the stored `addedAt`).
+- `settleIfDue()` — the check `start()` runs; anchors only if something has waited `intervalMs`.
 - `getProof(hashHex)` — look up the stored proof + anchor info for a hash.
 - `verify(hashHex)` — cryptographically and on-chain verification (see above).
 - `refreshStatus(batchId)` — re-fetch a batch's transaction and update its
