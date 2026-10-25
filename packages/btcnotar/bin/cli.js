@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { BTCNotar } from "../index.js";
+import { BTCNotar, BTCNotarClient, sha256Hex } from "../index.js";
 import { FileStore } from "../src/store.js";
 
 function usage() {
     console.log(`btcnotar - batch Bitcoin notarization CLI
 
-Usage:
+Free public server (no key, no bitcoin needed):
+  btcnotar submit <hash|text>  Send a hash to the server queue (text is hashed with SHA-256)
+  btcnotar check <hash|text>   Get the proof from the server and verify it on the blockchain
+
+Own notary (needs BTCNOTAR_WIF and a funded address):
   btcnotar add <hash>        Queue a document hash for the next settlement
   btcnotar settle            Settle all pending hashes now (build Merkle tree + anchor on-chain)
   btcnotar proof <hash>      Print the stored proof for a hash
@@ -14,6 +18,7 @@ Usage:
   btcnotar address           Print the notary's Bitcoin address
 
 Environment variables:
+  BTCNOTAR_SERVER    Public server URL for submit/check (or use --server <url>)
   BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions [required]
   BTCNOTAR_NETWORK   "mainnet" or "testnet" (default: mainnet)
   BTCNOTAR_STORE     Path to the JSON store file (default: ./.btcnotar/store.json)
@@ -31,10 +36,40 @@ function buildNotary() {
     return new BTCNotar({ wif, network, store: new FileStore({ filePath }) });
 }
 
+function toHash(input) {
+    if (!input) throw new Error("give a hash or a text");
+    return /^[0-9a-fA-F]{64}$/.test(input) ? input.toLowerCase() : sha256Hex(input);
+}
+
+function buildClient(args) {
+    const i = args.indexOf("--server");
+    const serverUrl = i >= 0 ? args[i + 1] : process.env.BTCNOTAR_SERVER;
+    if (!serverUrl) {
+        console.error("Missing server: set BTCNOTAR_SERVER or use --server <url>");
+        process.exit(1);
+    }
+    if (i >= 0) args.splice(i, 2);
+    return new BTCNotarClient({ serverUrl, network: process.env.BTCNOTAR_NETWORK || "mainnet" });
+}
+
 async function main() {
-    const [cmd, arg] = process.argv.slice(2);
+    const args = process.argv.slice(2);
+    const cmd = args[0];
 
     if (!cmd || cmd === "-h" || cmd === "--help") return usage();
+
+    if (cmd === "submit" || cmd === "check") {
+        const client = buildClient(args);
+        const input = args.slice(1).join(" ");
+        const hash = toHash(input);
+        if (hash !== input.toLowerCase()) console.log(`SHA-256: ${hash}`);
+        const out = cmd === "submit" ? await client.submit(hash) : await client.verify(hash);
+        console.log(JSON.stringify(out, null, 2));
+        if (cmd === "check") process.exit(out.valid ? 0 : 1);
+        return;
+    }
+
+    const arg = args[1];
 
     if (cmd === "address") {
         const notary = buildNotary();

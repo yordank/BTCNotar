@@ -11,6 +11,7 @@ const { connect, defaultConfig } = pkg;
 
 const app = express();
 app.set("etag", false); // stop 304 cache on some browsers
+app.set("trust proxy", 1); // Railway is behind a proxy: req.ip = real client IP
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
@@ -107,6 +108,24 @@ async function getSdk() {
 // Batch notarization (btcnotar library): hashes get queued here and
 // anchored together (every SETTLE_INTERVAL_MIN, default 60 min) in a single Merkle-rooted OP_RETURN tx.
 // ================================================================
+// Free public queue limits (anyone can add hashes; the server pays one tx per batch).
+const MAX_PENDING = Number(process.env.MAX_PENDING || 10000);          // max hashes waiting in the queue
+const HASH_RATE_PER_MIN = Number(process.env.HASH_RATE_PER_MIN || 30); // max new hashes per IP per minute
+
+// Simple per-IP limit: ip -> { windowStart, count }
+const rateHits = new Map();
+function rateLimited(ip, limit) {
+    const now = Date.now();
+    const hit = rateHits.get(ip);
+    if (!hit || now - hit.windowStart > 60_000) {
+        rateHits.set(ip, { windowStart: now, count: 1 });
+        if (rateHits.size > 50_000) rateHits.clear(); // keep memory bounded
+        return false;
+    }
+    hit.count++;
+    return hit.count > limit;
+}
+
 // Queued hashes are anchored once the oldest one has waited this long (no tx if the queue is empty).
 const SETTLE_INTERVAL_MIN = Number(process.env.SETTLE_INTERVAL_MIN || 60);
 
@@ -323,12 +342,27 @@ app.post("/api/notary/hash", async (req, res) => {
         if (!isValidHashHex(hashHex)) {
             return res.status(400).json({ error: "hashHex must be 64 hex chars" });
         }
-        const entry = await n.addHash(hashHex);
-        res.json({ ...entry, pendingCount: await n.pendingCount() });
+
+        // Already anchored or already waiting: just report it (no limits needed).
+        const known = await n.getStatus(hashHex);
+        if (known) return res.json(known);
+
+        if (!isAdmin(req)) {
+            if (rateLimited(req.ip, HASH_RATE_PER_MIN)) {
+                return res.status(429).json({ error: `too many requests: max ${HASH_RATE_PER_MIN} hashes per minute` });
+            }
+            if ((await n.pendingCount()) >= MAX_PENDING) {
+                return res.status(503).json({ error: "queue is full, try again after the next settlement" });
+            }
+        }
+
+        await n.addHash(hashHex);
+        res.json({ ...(await n.getStatus(hashHex)), pendingCount: await n.pendingCount() });
     } catch (e) {
         res.status(500).json({ error: e?.message || String(e) });
     }
 });
+
 
 // POST /api/notary/settle
 // Force-settle the current batch immediately (normally happens automatically).
@@ -345,17 +379,19 @@ app.post("/api/notary/settle", async (req, res) => {
 });
 
 // GET /api/notary/proof/:hash
+// 200 = anchored (proof), 202 = waiting in the queue, 404 = unknown
 app.get("/api/notary/proof/:hash", async (req, res) => {
     const n = requireNotary(res);
     if (!n) return;
     try {
-        const proof = await n.getProof(String(req.params.hash || "").toLowerCase());
-        if (!proof) return res.status(404).json({ error: "no proof found for that hash" });
-        res.json(proof);
+        const status = await n.getStatus(String(req.params.hash || "").toLowerCase());
+        if (!status) return res.status(404).json({ error: "no proof found for that hash" });
+        res.status(status.status === "pending" ? 202 : 200).json(status);
     } catch (e) {
         res.status(500).json({ error: e?.message || String(e) });
     }
 });
+
 
 // GET /api/notary/verify/:hash
 // Cryptographically re-derives the Merkle root from the hash + its proof,
@@ -365,8 +401,10 @@ app.get("/api/notary/verify/:hash", async (req, res) => {
     const n = requireNotary(res);
     if (!n) return;
     try {
-        const result = await n.verify(String(req.params.hash || "").toLowerCase());
-        res.json(result);
+        const hash = String(req.params.hash || "").toLowerCase();
+        const status = await n.getStatus(hash);
+        if (status?.status === "pending") return res.json({ valid: false, reason: "pending", nextSettleAt: status.nextSettleAt });
+        res.json(await n.verify(hash));
     } catch (e) {
         res.status(500).json({ error: e?.message || String(e) });
     }
