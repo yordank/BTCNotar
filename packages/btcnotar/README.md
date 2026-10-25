@@ -74,6 +74,37 @@ Only when both agree is the hash reported as anchored — together with the
 transaction id, block hash/height and date, so "is this document on the
 blockchain, and when/where" has one unambiguous answer.
 
+## Free public server (no key, no bitcoin)
+
+Don't want to run your own notary? Send hashes to the free public BTCNotar server
+(`https://proofofexistance-production.up.railway.app`, used by default).
+The server batches them and pays the fee (one transaction per batch).
+You verify the result yourself against the blockchain, so you don't have to trust the server.
+
+```js
+import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();   // or { serverUrl: "https://your-own-server" }
+
+const hash = sha256Hex(fs.readFileSync("contract.pdf"));
+await client.submit(hash);        // { status: "pending", nextSettleAt: "..." }
+
+// after the next settlement (see nextSettleAt):
+await client.verify(hash);        // { valid: true, confirmed: true, txid, blockHeight, date }
+```
+
+- `submit(hash)` — add the hash to the server queue.
+- `getProof(hash)` — proof record, `{ status: "pending" }` while waiting, or `null`.
+- `verify(hash)` — gets the proof from the server and checks it on-chain (mempool.space by default, or pass your own `provider`).
+
+From the command line:
+
+```
+npx btcnotar submit "any text or a sha256 hash"
+npx btcnotar check  "any text or a sha256 hash"
+# own server: add --server https://your-own-server
+```
+
 ## API
 
 ### `new BTCNotar(options)`
@@ -97,6 +128,7 @@ blockchain, and when/where" has one unambiguous answer.
   nothing was pending.
 - `start({ intervalMs })` / `stop()` — automatic settlement: checks every minute and anchors when the oldest pending hash is `intervalMs` old. Survives restarts (uses the stored `addedAt`).
 - `settleIfDue()` — the check `start()` runs; anchors only if something has waited `intervalMs`.
+- `getStatus(hash)` — `{ status: "anchored", ...proof }`, `{ status: "pending", addedAt, nextSettleAt }` or `null`.
 - `anchorNow(hash)` — anchor one hash immediately (together with anything already queued) and return its proof. If the hash is already anchored, returns the existing proof without a new transaction.
 - `getProof(hashHex)` — look up the stored proof + anchor info for a hash.
 - `verify(hashHex)` — cryptographically and on-chain verification (see above).

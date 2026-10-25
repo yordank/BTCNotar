@@ -7,59 +7,10 @@ import { ECPairFactory } from "ecpair";
 import { BTCNotar } from "../src/notary.js";
 import { MemoryStore } from "../src/store.js";
 import { encodeOpReturnPayload } from "../src/bitcoin.js";
+import { FakeProvider, sha256hex, testWif } from "./helpers.js";
 
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
-
-function sha256hex(s) {
-    return crypto.createHash("sha256").update(s).digest("hex");
-}
-
-function testWif() {
-    const keyPair = ECPair.makeRandom({ network: bitcoin.networks.testnet });
-    return keyPair.toWIF();
-}
-
-/**
- * Minimal in-memory chain simulator implementing the same interface as
- * MempoolProvider, so settle()/verify() can be exercised end-to-end
- * without any network access.
- */
-class FakeProvider {
-    constructor() {
-        this.broadcasted = new Map(); // txid -> { rawHex, vout, confirmed }
-    }
-
-    async fetchUtxos() {
-        return [{ txid: "f".repeat(64), vout: 0, value: 100000 }];
-    }
-
-    async fetchFeeRateSatVb() {
-        return 5;
-    }
-
-    async broadcastTx(rawHex) {
-        const tx = bitcoin.Transaction.fromHex(rawHex);
-        const txid = tx.getId();
-        this.broadcasted.set(txid, {
-            vout: tx.outs.map((o) => ({ scriptpubkey: Buffer.from(o.script).toString("hex"), value: Number(o.value) })),
-        });
-        return txid;
-    }
-
-    async fetchTransaction(txid) {
-        const tx = this.broadcasted.get(txid);
-        if (!tx) return null;
-        return {
-            txid,
-            confirmed: true,
-            blockHeight: 900000,
-            blockHash: "b".repeat(64),
-            blockTime: 1750000000,
-            vout: tx.vout,
-        };
-    }
-}
 
 test("settle() anchors a batch and each hash gets a verifiable proof", async () => {
     const provider = new FakeProvider();

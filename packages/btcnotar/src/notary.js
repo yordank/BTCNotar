@@ -3,7 +3,8 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { ECPairFactory } from "ecpair";
 import { MerkleTree } from "./merkle.js";
-import { MempoolProvider, createOpReturnTx, encodeOpReturnPayload, extractOpReturnData } from "./bitcoin.js";
+import { MempoolProvider, createOpReturnTx, encodeOpReturnPayload } from "./bitcoin.js";
+import { verifyProof } from "./verify.js";
 import { MemoryStore } from "./store.js";
 
 bitcoin.initEccLib(ecc);
@@ -195,6 +196,26 @@ export class BTCNotar {
         };
     }
 
+    /** When the queue will be anchored next (oldest pending addedAt + intervalMs), or null if empty. */
+    async nextSettleAt() {
+        const pending = await this.store.listPending();
+        if (!pending.length) return null;
+        const oldest = Math.min(...pending.map((p) => Date.parse(p.addedAt) || Date.now()));
+        return new Date(oldest + this.intervalMs).toISOString();
+    }
+
+    /**
+     * Where is this hash? { status: "anchored", ...proof } | { status: "pending", addedAt, nextSettleAt } | null
+     */
+    async getStatus(hashHex) {
+        const hash = String(hashHex).toLowerCase();
+        const proof = await this.getProof(hash);
+        if (proof) return { status: "anchored", ...proof };
+        const queued = (await this.store.listPending()).find((p) => p.hash === hash);
+        if (queued) return { status: "pending", hash, addedAt: queued.addedAt, nextSettleAt: await this.nextSettleAt() };
+        return null;
+    }
+
     /** Re-fetch a batch's anchoring transaction and update its confirmation status. */
     async refreshStatus(batchId) {
         const batch = await this.store.getBatch(batchId);
@@ -221,31 +242,7 @@ export class BTCNotar {
      * the transaction id, block hash/height and date.
      */
     async verify(hashHex, proofRecord) {
-        const hash = hashHex.toLowerCase();
-        const record = proofRecord || (await this.getProof(hash));
-        if (!record) return { valid: false, reason: "no-proof-found" };
-
-        if (!MerkleTree.verifyProof(hash, record.proof, record.merkleRoot)) {
-            return { valid: false, reason: "merkle-proof-mismatch" };
-        }
-
-        const tx = await this.provider.fetchTransaction(record.txid);
-        if (!tx) return { valid: false, reason: "transaction-not-found", txid: record.txid };
-
-        const onChainRoot = extractOpReturnData(tx);
-        if (!onChainRoot || onChainRoot !== record.merkleRoot) {
-            return { valid: false, reason: "on-chain-data-mismatch", txid: record.txid };
-        }
-
-        return {
-            valid: true,
-            confirmed: !!tx.confirmed,
-            txid: record.txid,
-            merkleRoot: record.merkleRoot,
-            blockHeight: tx.blockHeight ?? null,
-            blockHash: tx.blockHash ?? null,
-            blockTime: tx.blockTime ?? null,
-            date: tx.blockTime ? new Date(tx.blockTime * 1000).toISOString() : null,
-        };
+        const record = proofRecord || (await this.getProof(hashHex));
+        return verifyProof(hashHex, record, this.provider);
     }
 }
