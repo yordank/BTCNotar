@@ -232,6 +232,17 @@
             line-height: 1.3;
         }
 
+        .support-card { margin-top: 18px; }
+        .support-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .support-row code {
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(247, 147, 26, 0.12);
+            color: #f7931a;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
         a.mempool {
             color: var(--btc);
             font-weight: 900;
@@ -786,12 +797,32 @@
             </section>
         </section>
 
+        <!-- SUPPORT (visible on every tab) -->
+        <section class="card support-card">
+            <div class="hd">
+                <h2 id="t_supportTitle"></h2>
+            </div>
+            <div class="bd">
+                <p id="t_supportText"></p>
+                <div class="support-row">
+                    <code id="supportAddr">trappedknight861@walletofsatoshi.com</code>
+                    <button type="button" id="supportCopy"></button>
+                    <a id="supportOpen" class="mempool" href="lightning:trappedknight861@walletofsatoshi.com"></a>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
         /* ================= i18n ================= */
         const i18n = {
             en: {
+                supportTitle: "Support the project ⚡",
+                supportText: "BTC Notar is free. If you like it, you can send any amount of sats to this Lightning address:",
+                supportCopy: "Copy",
+                supportCopied: "Copied!",
+                supportOpen: "Open in wallet",
                 title: "Bitcoin Proof of Existence",
                 textLabel: "Text (optional)",
                 hashLabel: "Or paste SHA-256 (64 hex)",
@@ -867,6 +898,11 @@
                 wizHelp3: "👉 Pay and save the TXID (receipt)",
             },
             bg: {
+                supportTitle: "Подкрепи проекта ⚡",
+                supportText: "BTC Notar е безплатен. Ако ти харесва, можеш да изпратиш колкото искаш сатоши на този Lightning адрес:",
+                supportCopy: "Копирай",
+                supportCopied: "Копирано!",
+                supportOpen: "Отвори в портфейл",
                 title: "Bitcoin доказателство за съществуване",
                 subtitle: "Доказва авторство и дата чрез Bitcoin",
                 legalNote: "Това приложение не предоставя правен съвет и не замества нотариална или юридическа услуга.",
@@ -942,6 +978,11 @@
                 wizHelp3: "👉 Плати и запази TXID (квитанцията)",
             },
             de: {
+                supportTitle: "Projekt unterstützen ⚡",
+                supportText: "BTC Notar ist kostenlos. Wenn es dir gefällt, kannst du beliebig viele Sats an diese Lightning-Adresse senden:",
+                supportCopy: "Kopieren",
+                supportCopied: "Kopiert!",
+                supportOpen: "In Wallet öffnen",
                 title: "Bitcoin Existenznachweis",
                 subtitle: "Beweist Urheberschaft und Datum mit Bitcoin",
                 legalNote: "Diese Anwendung stellt keine Rechtsberatung dar und ersetzt keine notarielle oder rechtliche Dienstleistung.",
@@ -1019,6 +1060,23 @@
         };
 
         let currentLang = localStorage.getItem("lang") || "en";
+
+        /* ================= support (Lightning address) ================= */
+        document.getElementById("supportCopy").addEventListener("click", async () => {
+            const btn = document.getElementById("supportCopy");
+            const addr = document.getElementById("supportAddr").textContent.trim();
+            try {
+                await navigator.clipboard.writeText(addr);
+            } catch {
+                const r = document.createRange();
+                r.selectNodeContents(document.getElementById("supportAddr"));
+                getSelection().removeAllRanges();
+                getSelection().addRange(r);
+                document.execCommand("copy");
+            }
+            btn.textContent = t("supportCopied");
+            setTimeout(() => (btn.textContent = t("supportCopy")), 1500);
+        });
 
         function t(key) {
             return (i18n[currentLang] && i18n[currentLang][key]) || (i18n.en[key] || key);
@@ -1148,6 +1206,12 @@
             t_forWho3.textContent = t("forWho3");
             t_forWho4.textContent = t("forWho4");
             t_legalNote.textContent = t("legalNote");
+
+            // Support / donations
+            t_supportTitle.textContent = t("supportTitle");
+            t_supportText.textContent = t("supportText");
+            supportCopy.textContent = t("supportCopy");
+            supportOpen.textContent = t("supportOpen");
 
 
             // Tabs

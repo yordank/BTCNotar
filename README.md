@@ -205,6 +205,14 @@ GET  /api/notary/verify/:hash              — verify against the live chain</co
 
 <hr/>
 
+<h2>⚡ Support the project</h2>
+
+<p>BTC Notar is free. If you like it, you can send any amount of sats to this Lightning address:</p>
+
+<p><code>trappedknight861@walletofsatoshi.com</code></p>
+
+<hr/>
+
 <h2>📄 License</h2>
 
 <p><strong>MIT</strong></p>

@@ -6,6 +6,8 @@
 - **Private.** Only the SHA-256 hash is sent. Your file never leaves your computer.
 - **Trustless.** `verify()` checks the proof directly on the blockchain, not on our server.
 
+⚡ Like it? Support with sats: `trappedknight861@walletofsatoshi.com`
+
 ```bash
 npm install btcnotar
 ```
@@ -235,6 +237,13 @@ Your hash is not visible on the blockchain — only the Merkle root of all hashe
 The proof connects your hash to that root.
 
 Merkle tree: leaf = `sha256(0x00 || hash)`, node = `sha256(0x01 || left || right)`, an odd node is moved up unchanged.
+
+## Support the project ⚡
+
+`btcnotar` and the public server are free — the server pays the Bitcoin fees.
+If you like it, you can send any amount of sats to this Lightning address:
+
+**`trappedknight861@walletofsatoshi.com`**
 
 ## License
 
