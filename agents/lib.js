@@ -14,6 +14,9 @@ export const MAX_ROUNDS = Number(process.env.AGENT_MAX_ROUNDS || 5);
 export const MAX_FAILURES = 3;
 export const RUN_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 30 * 60_000);
 export const AUTO_COMMIT = process.env.AGENT_AUTO_COMMIT !== "0";
+// Sync with GitHub: pull new tasks when idle, push after each approved commit.
+export const SYNC = process.env.AGENT_SYNC !== "0";
+export const PULL_MS = Number(process.env.AGENT_PULL_MS || 60_000);
 
 // Status states written to WORKLOG.md
 export const S = {
@@ -85,7 +88,46 @@ export function markTaskDone(num) {
 }
 
 export function git(cmd) {
-    return execSync(`git ${cmd}`, { cwd: ROOT, encoding: "utf8" }).trim();
+    return execSync(`git ${cmd}`, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+}
+
+// Print a message only when it changes (avoids the same line every 10s).
+let lastSaid = "";
+export function logOnce(who, msg) {
+    if (msg === lastSaid) return;
+    lastSaid = msg;
+    if (msg) log(who, msg); // empty msg = reset only
+
+}
+
+let lastPull = 0;
+// Pull new commits (e.g. PLAN.md edited on GitHub from the phone). At most once per PULL_MS.
+export function pullIfDue(who) {
+    if (!SYNC || Date.now() - lastPull < PULL_MS) return;
+    lastPull = Date.now();
+    const before = git("rev-parse HEAD");
+    try {
+        git("pull --rebase --autostash -q");
+    } catch (e) {
+        try { git("rebase --abort"); } catch {}
+        log(who, `git pull failed: ${errLine(e)}`);
+        return;
+    }
+    if (git("rev-parse HEAD") !== before) log(who, "Pulled new changes from GitHub.");
+}
+
+export function pushIfEnabled(who) {
+    if (!SYNC) return;
+    try {
+        git("push -q");
+        log(who, "Pushed to GitHub.");
+    } catch (e) {
+        log(who, `git push failed: ${errLine(e)}`);
+    }
+}
+
+function errLine(e) {
+    return String(e.stderr || e.message).trim().split("\n").pop();
 }
 
 // Run Claude Code headless. The prompt goes through stdin (no quoting issues on Windows).

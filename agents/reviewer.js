@@ -1,6 +1,6 @@
 // Reviewer agent: waits for the developer's report, tests and reviews the changes, writes the verdict to WORKLOG.md.
 import {
-    S, MAX_FAILURES, AUTO_COMMIT, log, readStatus, writeStatus, appendEntry, lastEntry, readTasks, markTaskDone, git, runClaude, pollLoop,
+    S, MAX_FAILURES, AUTO_COMMIT, log, logOnce, readStatus, writeStatus, appendEntry, lastEntry, readTasks, markTaskDone, git, runClaude, pollLoop, pushIfEnabled,
 } from "./lib.js";
 
 const WHO = "REVIEW";
@@ -36,8 +36,9 @@ function commit(task) {
         git("add -A");
         git(`commit -m "Task ${task.num}: ${task.text.replace(/["`$\\]/g, "'").slice(0, 70)}"`);
         log(WHO, "Committed.");
+        pushIfEnabled(WHO);
     } catch (e) {
-        log(WHO, `Commit skipped: ${e.message.split("\n")[0]}`);
+        log(WHO, `Commit skipped: ${String(e.stderr || e.message).trim().split("\n").pop()}`);
     }
 }
 
@@ -64,7 +65,7 @@ async function review(task, round) {
 
     if (approved) {
         markTaskDone(task.num);
-        commit(task);
+        commit(task); // commit + push before the status change, so DEV never runs git at the same time
         writeStatus(S.REVIEW_APPROVED, task.num, round);
         log(WHO, `Task ${task.num} approved. Next task.`);
     } else {
@@ -75,13 +76,13 @@ async function review(task, round) {
 
 pollLoop(WHO, async () => {
     const st = readStatus();
-    if (st?.state === S.ALL_DONE) return true;
     if (st?.state === S.BLOCKED) {
-        log(WHO, "BLOCKED. Fix the problem, then delete the BLOCKED line in WORKLOG.md.");
-        return true;
+        logOnce(WHO, "BLOCKED. Waiting until the BLOCKED line is removed from WORKLOG.md.");
+        return;
     }
     // DEV_DONE: our turn. REVIEW_WORKING here means a stopped/failed run: try again.
     if (st?.state !== S.DEV_DONE && st?.state !== S.REVIEW_WORKING) return;
+    logOnce(WHO, "");
 
     const task = readTasks().find((t) => t.num === st.task);
     if (!task) {
