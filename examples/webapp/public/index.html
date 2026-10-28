@@ -233,6 +233,38 @@
         }
 
         .support-card { margin-top: 18px; }
+        .lib-gap { margin-top: 14px; }
+        .single-note { margin-bottom: 14px; }
+        .lib-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .lib-btn {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .lib-btn:hover { border-color: var(--btc); }
+        .lib-label { color: var(--muted); margin: 14px 0 6px; }
+        pre.code {
+            box-sizing: border-box;
+            max-width: 100%;
+            margin: 8px 0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: #0a0d13;
+            border: 1px solid var(--line);
+            color: #e6e9f2;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .lib-result { min-width: 0; flex: 1; overflow-wrap: anywhere; word-break: break-word; }
+        .lib-result a { color: var(--btc); }
+        #tab-lib .bd { min-width: 0; }
+        #libDemoText { width: 100%; box-sizing: border-box; }
         .support-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
         .support-row code {
             padding: 8px 12px;
@@ -625,12 +657,14 @@
         </button>
 
 
-        <button class="tab active" id="tabBtn_app" data-tab="app" type="button"></button>
+        <button class="tab active" id="tabBtn_lib" data-tab="lib" type="button" data-i18n="tabLib"></button>
+        <button class="tab" id="tabBtn_app" data-tab="app" type="button"></button>
         <button class="tab" id="tabBtn_about" data-tab="about" type="button"></button>
         <button class="tab" id="tabBtn_how" data-tab="how" type="button"></button>
 
 
         <div class="menu-panel" id="menuPanel" aria-label="Mobile menu">
+            <button class="menu-item" data-tab="lib" type="button" data-i18n="tabLib"></button>
             <button class="menu-item" data-tab="app" type="button" id="menuItem_app"></button>
             <button class="menu-item" data-tab="about" type="button" id="menuItem_about"></button>
             <button class="menu-item" data-tab="how" type="button" id="menuItem_how"></button>
@@ -639,8 +673,95 @@
 
     <main class="wrap">
 
-        <!-- APP -->
-        <section id="tab-app" class="tab-content active">
+        <!-- LIBRARY (free, default) -->
+        <section id="tab-lib" class="tab-content active">
+
+            <section class="card">
+                <div class="hd">
+                    <h2 data-i18n="libTitle"></h2>
+                    <small data-i18n="libSub"></small>
+                </div>
+                <div class="bd">
+                    <ul class="icon-list">
+                        <li><span class="icon">🆓</span><span data-i18n="libP1"></span></li>
+                        <li><span class="icon">🔒</span><span data-i18n="libP2"></span></li>
+                        <li><span class="icon">🔎</span><span data-i18n="libP3"></span></li>
+                    </ul>
+                    <div class="lib-links">
+                        <a class="lib-btn" href="https://www.npmjs.com/package/btcnotar" target="_blank" rel="noreferrer">📦 npm</a>
+                        <a class="lib-btn" href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer">💻 GitHub</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card lib-gap">
+                <div class="hd">
+                    <h2 data-i18n="libTryTitle"></h2>
+                    <small data-i18n="libTrySub"></small>
+                </div>
+                <div class="bd">
+                    <input id="libDemoText" data-i18n-ph="libTryPh" autocomplete="off" />
+                    <div class="row">
+                        <button class="primary" id="libDemoSend" type="button" data-i18n="libSend"></button>
+                        <button id="libDemoCheck" type="button" data-i18n="libCheck"></button>
+                    </div>
+                    <div id="libDemoBox" class="status" style="display:none">
+                        <span class="badge neutral" id="libDemoBadge"></span>
+                        <div id="libDemoMsg"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card lib-gap">
+                <div class="hd">
+                    <h2 data-i18n="libUseTitle"></h2>
+                    <small>Node.js · npm</small>
+                </div>
+                <div class="bd">
+                    <pre class="code">npm install btcnotar</pre>
+<pre class="code">import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();
+const hash = sha256Hex("Hello, Bitcoin!");
+
+await client.submit(hash);  // pending → on-chain within ~1 hour
+await client.verify(hash);  // { valid: true, txid, blockHeight, date }</pre>
+                    <p class="lib-label" data-i18n="libCliTitle"></p>
+<pre class="code">npx btcnotar submit "Hello, Bitcoin!"
+npx btcnotar check  "Hello, Bitcoin!"</pre>
+                </div>
+            </section>
+
+            <section class="card lib-gap">
+                <div class="hd">
+                    <h2 data-i18n="libHowTitle"></h2>
+                </div>
+                <div class="bd">
+                    <ol class="how">
+                        <li data-i18n="libH1"></li>
+                        <li data-i18n="libH2"></li>
+                        <li data-i18n="libH3"></li>
+                    </ol>
+                    <p class="lib-label" data-i18n="libMoreLangs"></p>
+                    <div class="status lib-gap">
+                        <span class="badge neutral">⚡</span>
+                        <div>
+                            <span data-i18n="libSingleNote"></span>
+                            <div class="row"><button type="button" id="libGoSingle" data-i18n="libSingleBtn"></button></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+
+        <!-- APP (single paid transaction) -->
+        <section id="tab-app" class="tab-content">
+
+            <div class="status single-note">
+                <span class="badge neutral">⚡</span>
+                <div data-i18n="singleNote"></div>
+            </div>
 
             <!-- WIZARD -->
             <div class="wizard" aria-label="Wizard">
@@ -818,6 +939,37 @@
         /* ================= i18n ================= */
         const i18n = {
             en: {
+                tabLib: "Library (free)",
+                libTitle: "Free Bitcoin timestamps for developers",
+                libSub: "npm library btcnotar — no key, no bitcoin, no fees",
+                libP1: "Free — the server pays the Bitcoin fee",
+                libP2: "Private — only the SHA-256 hash is sent, never your file",
+                libP3: "Trustless — verify() checks the Bitcoin blockchain itself",
+                libTryTitle: "Try it now",
+                libTrySub: "Free · written to Bitcoin within about 1 hour",
+                libTryPh: "Type any text or paste a SHA-256…",
+                libSend: "Send (free)",
+                libCheck: "Check",
+                libPending: "In the queue. It will be written to Bitcoin at:",
+                libFound: "On the Bitcoin blockchain.",
+                libMempool: "Transaction sent, waiting for a block (~10 min).",
+                libUnknown: "This hash was not sent yet. Click “Send (free)”.",
+                libRate: "Too many requests. Try again in a minute.",
+                libError: "Error:",
+                libBlock: "Block",
+                libDate: "Date",
+                libEmpty: "Type a text or a SHA-256 first.",
+                libUseTitle: "Use it in your code",
+                libCliTitle: "Or from the command line (no code):",
+                libHowTitle: "How it works",
+                libH1: "You send a SHA-256 hash. Your text or file stays with you.",
+                libH2: "Every hour all hashes go into one Bitcoin transaction (Merkle tree + OP_RETURN).",
+                libH3: "You get a proof and check it on the blockchain — no trust needed.",
+                libMoreLangs: "Ideas: versions for Python, Rust, Go and .NET (NuGet). Want to help? → GitHub",
+                libSingleNote: "Need it right now, for one hash? Use a single transaction (paid with Lightning).",
+                libSingleBtn: "Single transaction →",
+                tabApp: "Single transaction ⚡",
+                singleNote: "Instant: one hash, one Bitcoin transaction, paid with Lightning. Free option: the “Library” tab.",
                 supportTitle: "Support the project ⚡",
                 supportText: "BTC Notar is free. If you like it, you can send any amount of sats to this Lightning address:",
                 supportCopy: "Copy",
@@ -862,7 +1014,6 @@
                 aboutL3: "Verifiable anytime, without intermediaries",
                 txLoadedNoHash: "Transaction loaded. Provide SHA-256 to check OP_RETURN.",
 
-                tabApp: "App",
                 tabAbout: "What is this?",
                 tabHow: "How to use",
                 textPlaceholder: "Paste text to hash…",
@@ -898,6 +1049,37 @@
                 wizHelp3: "👉 Pay and save the TXID (receipt)",
             },
             bg: {
+                tabLib: "Библиотека (безплатно)",
+                libTitle: "Безплатни Bitcoin времеви печати за програмисти",
+                libSub: "npm библиотека btcnotar — без ключ, без биткойн, без такси",
+                libP1: "Безплатно — сървърът плаща таксата в Bitcoin",
+                libP2: "Поверително — праща се само SHA-256 хешът, никога файлът",
+                libP3: "Без доверие — verify() проверява директно в блокчейна",
+                libTryTitle: "Пробвай сега",
+                libTrySub: "Безплатно · записва се в Bitcoin до около 1 час",
+                libTryPh: "Напиши текст или постави SHA-256…",
+                libSend: "Изпрати (безплатно)",
+                libCheck: "Провери",
+                libPending: "В опашката е. Ще бъде записан в Bitcoin в:",
+                libFound: "В Bitcoin блокчейна е.",
+                libMempool: "Транзакцията е изпратена, чака блок (~10 мин).",
+                libUnknown: "Този хеш още не е изпратен. Натисни „Изпрати (безплатно)“.",
+                libRate: "Твърде много заявки. Опитай пак след минута.",
+                libError: "Грешка:",
+                libBlock: "Блок",
+                libDate: "Дата",
+                libEmpty: "Първо напиши текст или SHA-256.",
+                libUseTitle: "Използвай в своя код",
+                libCliTitle: "Или от командния ред (без код):",
+                libHowTitle: "Как работи",
+                libH1: "Пращаш SHA-256 хеш. Текстът или файлът остава при теб.",
+                libH2: "На всеки час всички хешове влизат в една Bitcoin транзакция (Merkle дърво + OP_RETURN).",
+                libH3: "Получаваш доказателство и го проверяваш в блокчейна — без доверие.",
+                libMoreLangs: "Идеи: версии за Python, Rust, Go и .NET (NuGet). Искаш да помогнеш? → GitHub",
+                libSingleNote: "Трябва ти веднага, за един хеш? Използвай единична транзакция (плащане с Lightning).",
+                libSingleBtn: "Единична транзакция →",
+                tabApp: "Единична транзакция ⚡",
+                singleNote: "Веднага: един хеш, една Bitcoin транзакция, плащане с Lightning. Безплатно: таб „Библиотека“.",
                 supportTitle: "Подкрепи проекта ⚡",
                 supportText: "BTC Notar е безплатен. Ако ти харесва, можеш да изпратиш колкото искаш сатоши на този Lightning адрес:",
                 supportCopy: "Копирай",
@@ -942,7 +1124,6 @@
                 aboutL3: "Проверимо по всяко време, без посредници или доверие",
                 txLoadedNoHash: "Транзакцията е заредена. Дай SHA-256, за да провериш OP_RETURN.",
 
-                tabApp: "Приложение",
                 tabAbout: "Какво е това?",
                 tabHow: "Как се използва?",
                 textPlaceholder: "Постави текст за хеширане…",
@@ -978,6 +1159,37 @@
                 wizHelp3: "👉 Плати и запази TXID (квитанцията)",
             },
             de: {
+                tabLib: "Bibliothek (kostenlos)",
+                libTitle: "Kostenlose Bitcoin-Zeitstempel für Entwickler",
+                libSub: "npm-Bibliothek btcnotar — kein Schlüssel, kein Bitcoin, keine Gebühren",
+                libP1: "Kostenlos — der Server zahlt die Bitcoin-Gebühr",
+                libP2: "Privat — nur der SHA-256-Hash wird gesendet, nie deine Datei",
+                libP3: "Ohne Vertrauen — verify() prüft direkt die Blockchain",
+                libTryTitle: "Jetzt ausprobieren",
+                libTrySub: "Kostenlos · in etwa 1 Stunde in Bitcoin",
+                libTryPh: "Text eingeben oder SHA-256 einfügen…",
+                libSend: "Senden (kostenlos)",
+                libCheck: "Prüfen",
+                libPending: "In der Warteschlange. Wird in Bitcoin geschrieben um:",
+                libFound: "In der Bitcoin-Blockchain.",
+                libMempool: "Transaktion gesendet, wartet auf einen Block (~10 Min.).",
+                libUnknown: "Dieser Hash wurde noch nicht gesendet. Klicke „Senden (kostenlos)“.",
+                libRate: "Zu viele Anfragen. Versuche es in einer Minute.",
+                libError: "Fehler:",
+                libBlock: "Block",
+                libDate: "Datum",
+                libEmpty: "Gib zuerst einen Text oder SHA-256 ein.",
+                libUseTitle: "In deinem Code verwenden",
+                libCliTitle: "Oder über die Kommandozeile (ohne Code):",
+                libHowTitle: "So funktioniert es",
+                libH1: "Du sendest einen SHA-256-Hash. Text oder Datei bleiben bei dir.",
+                libH2: "Jede Stunde kommen alle Hashes in eine Bitcoin-Transaktion (Merkle-Baum + OP_RETURN).",
+                libH3: "Du bekommst einen Beweis und prüfst ihn in der Blockchain — ohne Vertrauen.",
+                libMoreLangs: "Ideen: Versionen für Python, Rust, Go und .NET (NuGet). Willst du helfen? → GitHub",
+                libSingleNote: "Sofort und nur für einen Hash? Nutze eine Einzeltransaktion (Zahlung mit Lightning).",
+                libSingleBtn: "Einzeltransaktion →",
+                tabApp: "Einzeltransaktion ⚡",
+                singleNote: "Sofort: ein Hash, eine Bitcoin-Transaktion, Zahlung mit Lightning. Kostenlos: Tab „Bibliothek“.",
                 supportTitle: "Projekt unterstützen ⚡",
                 supportText: "BTC Notar ist kostenlos. Wenn es dir gefällt, kannst du beliebig viele Sats an diese Lightning-Adresse senden:",
                 supportCopy: "Kopieren",
@@ -1022,7 +1234,6 @@
                 aboutL3: "Jederzeit überprüfbar, ohne Vermittler",
                 txLoadedNoHash: "Transaktion geladen. Bitte SHA-256 angeben, um OP_RETURN zu prüfen.",
 
-                tabApp: "App",
                 tabAbout: "Was ist das?",
                 tabHow: "Wie benutzt man es?",
                 textPlaceholder: "Text zum Hashen einfügen…",
@@ -1060,6 +1271,104 @@
         };
 
         let currentLang = localStorage.getItem("lang") || "en";
+
+        /* ================= library tab: free live demo ================= */
+        (function () {
+            const input = document.getElementById("libDemoText");
+            const box = document.getElementById("libDemoBox");
+            const badge = document.getElementById("libDemoBadge");
+            const msg = document.getElementById("libDemoMsg");
+            const btnSend = document.getElementById("libDemoSend");
+            const btnCheck = document.getElementById("libDemoCheck");
+
+            async function sha256Text(text) {
+                const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+                return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+            }
+
+            async function currentHash() {
+                const v = (input.value || "").trim();
+                if (!v) return null;
+                return /^[0-9a-f]{64}$/i.test(v) ? v.toLowerCase() : sha256Text(v);
+            }
+
+            // kind: good | bad | neutral; lines: array of strings or [label, url] links
+            function show(kind, label, lines) {
+                box.style.display = "flex";
+                badge.className = "badge " + kind;
+                badge.textContent = label;
+                msg.textContent = "";
+                msg.className = "lib-result";
+                for (const line of lines) {
+                    const div = document.createElement("div");
+                    if (Array.isArray(line)) {
+                        const a = document.createElement("a");
+                        a.textContent = line[0];
+                        a.href = line[1];
+                        a.target = "_blank";
+                        a.rel = "noreferrer";
+                        div.appendChild(a);
+                    } else {
+                        div.textContent = line;
+                    }
+                    msg.appendChild(div);
+                }
+            }
+
+            function when(iso) {
+                try { return new Date(iso).toLocaleString(currentLang); } catch { return iso; }
+            }
+
+            function txLines(j) {
+                const out = [];
+                if (j.blockHeight) out.push(t("libBlock") + ": " + j.blockHeight);
+                if (j.date) out.push(t("libDate") + ": " + when(j.date));
+                if (j.txid) out.push(["mempool.space/tx/" + j.txid.slice(0, 12) + "…", "https://mempool.space/tx/" + j.txid]);
+                return out;
+            }
+
+            async function run(kind) {
+                const hash = await currentHash();
+                if (!hash) return show("neutral", "!", [t("libEmpty")]);
+                const hashLine = "SHA-256: " + hash;
+                btnSend.disabled = btnCheck.disabled = true;
+                try {
+                    if (kind === "send") {
+                        const r = await fetch("/api/notary/hash", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ hashHex: hash }),
+                        });
+                        const j = await r.json().catch(() => ({}));
+                        if (r.status === 429) return show("bad", "429", [t("libRate")]);
+                        if (!r.ok) return show("bad", "ERROR", [t("libError") + " " + (j.error || r.status)]);
+                        if (j.status === "anchored") return show("good", "✔", [t("libFound"), hashLine, ...txLines(j)]);
+                        return show("neutral", "PENDING", [t("libPending") + " " + when(j.nextSettleAt), hashLine]);
+                    }
+                    const r = await fetch("/api/notary/verify/" + hash, { cache: "no-store" });
+                    const j = await r.json().catch(() => ({}));
+                    if (!r.ok) return show("bad", "ERROR", [t("libError") + " " + (j.error || r.status)]);
+                    if (j.valid && j.confirmed) return show("good", "✔", [t("libFound"), hashLine, ...txLines(j)]);
+                    if (j.valid) return show("neutral", "MEMPOOL", [t("libMempool"), hashLine, ...txLines(j)]);
+                    if (j.reason === "pending") return show("neutral", "PENDING", [t("libPending") + " " + when(j.nextSettleAt), hashLine]);
+                    if (j.reason === "no-proof-found") return show("neutral", "?", [t("libUnknown"), hashLine]);
+                    return show("bad", "✖", [t("libError") + " " + j.reason, hashLine]);
+                } catch (e) {
+                    show("bad", "ERROR", [t("libError") + " " + (e.message || e)]);
+                } finally {
+                    btnSend.disabled = btnCheck.disabled = false;
+                }
+            }
+
+            btnSend.addEventListener("click", () => run("send"));
+            btnCheck.addEventListener("click", () => run("check"));
+            input.addEventListener("keydown", e => { if (e.key === "Enter") run("send"); });
+
+            document.getElementById("libGoSingle").addEventListener("click", () => {
+                setActiveTab("app");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+        })();
 
         /* ================= support (Lightning address) ================= */
         document.getElementById("supportCopy").addEventListener("click", async () => {
@@ -1206,6 +1515,10 @@
             t_forWho3.textContent = t("forWho3");
             t_forWho4.textContent = t("forWho4");
             t_legalNote.textContent = t("legalNote");
+
+            // Generic translated elements
+            document.querySelectorAll("[data-i18n]").forEach(el => (el.textContent = t(el.dataset.i18n)));
+            document.querySelectorAll("[data-i18n-ph]").forEach(el => (el.placeholder = t(el.dataset.i18nPh)));
 
             // Support / donations
             t_supportTitle.textContent = t("supportTitle");
@@ -1477,6 +1790,19 @@
             mempoolLink.href = "https://mempool.space/tx/" + tid;
             mempoolLink.style.display = "inline-block";
 
+            // New anchors write a Merkle root (BTN1 + root), not the raw hash: ask the notary first.
+            if (isHash(hash)) {
+                try {
+                    const v = await fetch("/api/notary/verify/" + hash, { cache: "no-store" }).then(r => r.json());
+                    if (v && v.valid && v.txid === tid) {
+                        verifyBadge.className = "badge good";
+                        verifyBadge.textContent = "FOUND";
+                        verifyMsg.textContent = t("done");
+                        return;
+                    }
+                } catch { /* fall back to the raw OP_RETURN check below (older transactions) */ }
+            }
+
             try {
                 const r = await fetch("https://mempool.space/api/tx/" + tid, { cache: "no-store" });
                 if (!r.ok) throw new Error("TX not found");
@@ -1515,13 +1841,13 @@
 
         /* ================= tabs ================= */
         function setActiveTab(tab) {
-            const wanted = tab || localStorage.getItem("tab") || "app";
+            const wanted = tab || localStorage.getItem("tab2") || "lib";
 
             document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
             document.querySelectorAll(".tab-content").forEach(s => s.classList.remove("active"));
 
-            const btn = document.querySelector('.tab[data-tab="' + wanted + '"]') || document.querySelector('.tab[data-tab="app"]');
-            const sec = document.getElementById("tab-" + (btn?.dataset?.tab || "app"));
+            const btn = document.querySelector('.tab[data-tab="' + wanted + '"]') || document.querySelector('.tab[data-tab="lib"]');
+            const sec = document.getElementById("tab-" + (btn?.dataset?.tab || "lib"));
 
             btn?.classList.add("active");
             sec?.classList.add("active");
@@ -1529,10 +1855,10 @@
             // Mobile menu active state
             const mi = document.querySelectorAll(".menu-item");
             mi.forEach(x => x.classList.remove("active"));
-            const activeMi = document.querySelector('.menu-item[data-tab="' + (btn?.dataset?.tab || "app") + '"]');
+            const activeMi = document.querySelector('.menu-item[data-tab="' + (btn?.dataset?.tab || "lib") + '"]');
             activeMi?.classList.add("active");
 
-            localStorage.setItem("tab", btn?.dataset?.tab || "app");
+            localStorage.setItem("tab2", btn?.dataset?.tab || "lib");
         }
 
         document.querySelectorAll(".tab").forEach(btn => {
