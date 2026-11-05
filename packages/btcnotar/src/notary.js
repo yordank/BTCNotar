@@ -6,6 +6,7 @@ import { MerkleTree } from "./merkle.js";
 import { MempoolProvider, createOpReturnTx, encodeOpReturnPayload } from "./bitcoin.js";
 import { verifyProof } from "./verify.js";
 import { MemoryStore } from "./store.js";
+import { toProofFile, writeProofFile } from "./prooffile.js";
 
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -35,6 +36,7 @@ function isHex(s) {
 export class BTCNotar {
     constructor({ wif, network = "mainnet", store, provider, feeRateSatVb, intervalMs = DAY_MS } = {}) {
         if (!wif) throw new Error("wif (private key, WIF format) is required");
+        this.networkName = network;
         this.network = network === "mainnet" ? bitcoin.networks.bitcoin : bitcoin.networks.testnet;
         this.keyPair = ECPair.fromWIF(wif, this.network);
         this.address = bitcoin.payments.p2wpkh({ pubkey: this.keyPair.publicKey, network: this.network }).address;
@@ -194,6 +196,20 @@ export class BTCNotar {
             blockHash: batch.blockHash,
             blockTime: batch.blockTime,
         };
+    }
+
+    /** Portable proof file object for an anchored hash (verify later with verifyProofFile, no server needed). */
+    async exportProof(hashHex) {
+        const record = await this.getProof(String(hashHex));
+        if (!record) throw new Error(`hash is not anchored: ${hashHex}`);
+        return toProofFile(record, { network: this.networkName });
+    }
+
+    /** exportProof() and save it to `filePath`. */
+    async saveProof(hashHex, filePath) {
+        const pf = await this.exportProof(hashHex);
+        writeProofFile(filePath, pf);
+        return pf;
     }
 
     /** When the queue will be anchored next (oldest pending addedAt + intervalMs), or null if empty. */

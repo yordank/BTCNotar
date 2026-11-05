@@ -115,6 +115,43 @@ npx btcnotar check  "Hello, Bitcoin!"
 
 You can give a text or a SHA-256 hash (64 hex characters).
 
+### 6. Save the proof — verify even if the server is gone
+
+The server keeps your proof. But you should keep a copy too.
+With the proof file you can verify **without any BTCNotar server** — only the Bitcoin blockchain is needed.
+
+```js
+// save-proof.mjs
+import fs from "node:fs";
+import { BTCNotarClient, sha256Hex } from "btcnotar";
+
+const client = new BTCNotarClient();
+const hash = sha256Hex(fs.readFileSync("contract.pdf"));
+
+await client.submit(hash);
+await client.waitForProof(hash);                          // waits until it is in a transaction (~1 hour)
+await client.saveProof(hash, "contract.pdf.btcnotar.json");
+```
+
+```js
+// verify-proof.mjs  — works years later, no server needed
+import { verifyProofFile } from "btcnotar";
+
+const r = await verifyProofFile("contract.pdf.btcnotar.json", { file: "contract.pdf" });
+console.log(r.valid ? `YES, block ${r.blockHeight}, ${r.date}` : `NO: ${r.reason}`);
+```
+
+Command line:
+
+```bash
+npx btcnotar submit --file contract.pdf
+npx btcnotar wait   --file contract.pdf
+npx btcnotar save   --file contract.pdf            # -> contract.pdf.btcnotar.json
+npx btcnotar verify-file contract.pdf.btcnotar.json --doc contract.pdf
+```
+
+Keep the proof file next to the document. If one of them is lost or changed, the proof is gone.
+
 ---
 
 ## How long does it take?
@@ -136,6 +173,7 @@ After the transaction is sent, `verify()` returns `valid: true`.
 { valid: false, reason: "unknown-hash" }                    // never sent
 { valid: false, reason: "merkle-proof-mismatch" }           // proof is wrong
 { valid: false, reason: "on-chain-data-mismatch" }          // blockchain has different data
+{ valid: false, reason: "document-hash-mismatch" }          // verifyProofFile: the document was changed
 ```
 
 ## Why you don't need to trust the server
@@ -200,6 +238,36 @@ npx btcnotar verify <hash>               # check on the blockchain
 - `submit(hash)` — add a hash to the queue → `{ status, hash, addedAt, nextSettleAt }`
 - `verify(hash)` — check on the blockchain → see [What verify() returns](#what-verify-returns)
 - `getProof(hash)` — raw proof, `{ status: "pending" }`, or `null`
+- `waitForProof(hash, { intervalMs, timeoutMs, confirmed, onUpdate })` — wait until the hash is in a transaction (with `confirmed: true` — in a block). Default: check every minute, give up after 3 hours
+- `downloadProof(hash)` — proof file object (see below)
+- `saveProof(hash, filePath)` — download the proof and save it as JSON
+
+### `verifyProofFile(fileOrObject, { file, hash, provider }?)`
+
+Verify a saved proof file against the blockchain. No server is used.
+`file` (path or Buffer) or `hash` — check that the proof is for this document.
+
+### Proof file format
+
+```json
+{
+  "format": "btcnotar-proof",
+  "version": 1,
+  "hash": "<sha256 of the document>",
+  "merkleRoot": "<root in the OP_RETURN>",
+  "proof": [{ "position": "left", "hash": "..." }],
+  "txid": "...",
+  "network": "mainnet",
+  "blockHeight": 920123,
+  "blockHash": "...",
+  "blockTime": 1761404892,
+  "date": "2026-10-25T15:08:12.000Z",
+  "server": "https://...",
+  "savedAt": "..."
+}
+```
+
+Only `hash`, `merkleRoot`, `proof`, `txid` and `network` are needed to verify. The rest is for people to read.
 
 ### `sha256Hex(textOrBuffer)`
 
@@ -216,11 +284,11 @@ SHA-256 of a string (UTF-8) or a Buffer, as a hex string.
 | `feeRateSatVb` | live from mempool.space | fixed fee (sat/vB) |
 | `provider` | `MempoolProvider` | blockchain backend |
 
-Methods: `address`, `addHash(hash)`, `pendingCount()`, `settle()`, `anchorNow(hash)`, `start()`, `stop()`, `settleIfDue()`, `getStatus(hash)`, `getProof(hash)`, `verify(hash)`, `refreshStatus(batchId)`.
+Methods: `address`, `addHash(hash)`, `exportProof(hash)`, `saveProof(hash, filePath)`, `pendingCount()`, `settle()`, `anchorNow(hash)`, `start()`, `stop()`, `settleIfDue()`, `getStatus(hash)`, `getProof(hash)`, `verify(hash)`, `refreshStatus(batchId)`.
 
 ### Other exports
 
-`MerkleTree`, `verifyProof(hash, proof, provider)`, `MemoryStore`, `FileStore`, `MempoolProvider`, `DEFAULT_SERVER_URL`.
+`MerkleTree`, `verifyProof(hash, proof, provider)`, `readProofFile`, `writeProofFile`, `toProofFile`, `MemoryStore`, `FileStore`, `MempoolProvider`, `DEFAULT_SERVER_URL`.
 
 ---
 

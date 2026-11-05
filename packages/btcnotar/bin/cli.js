@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { BTCNotar, BTCNotarClient, sha256Hex } from "../index.js";
+import fs from "node:fs";
+import { BTCNotar, BTCNotarClient, sha256Hex, verifyProofFile } from "../index.js";
 import { FileStore } from "../src/store.js";
 
 function usage() {
@@ -9,6 +10,14 @@ function usage() {
 Free public server (no key, no bitcoin needed):
   btcnotar submit <hash|text>  Send a hash to the server queue (text is hashed with SHA-256)
   btcnotar check <hash|text>   Get the proof from the server and verify it on the blockchain
+  btcnotar wait <hash|text>    Wait until the hash is on the blockchain (polls every minute)
+  btcnotar save <hash|text> [out.json]
+                               Download the proof and save it (default: <hash>.btcnotar.json)
+
+  Instead of <hash|text> you can use --file <path> (the file is hashed locally).
+
+Verify a saved proof file (no server needed, only the blockchain):
+  btcnotar verify-file <proof.json> [--doc <document>]
 
 Own notary (needs BTCNOTAR_WIF and a funded address):
   btcnotar add <hash>        Queue a document hash for the next settlement
@@ -41,10 +50,18 @@ function toHash(input) {
     return /^[0-9a-fA-F]{64}$/.test(input) ? input.toLowerCase() : sha256Hex(input);
 }
 
+// Take "--name value" out of args. Returns value or undefined.
+function takeOpt(args, name) {
+    const i = args.indexOf(name);
+    if (i < 0) return undefined;
+    const value = args[i + 1];
+    if (!value) throw new Error(`${name} needs a value`);
+    args.splice(i, 2);
+    return value;
+}
+
 function buildClient(args) {
-    const i = args.indexOf("--server");
-    const serverUrl = (i >= 0 ? args[i + 1] : process.env.BTCNOTAR_SERVER) || undefined; // undefined = public server
-    if (i >= 0) args.splice(i, 2);
+    const serverUrl = takeOpt(args, "--server") || process.env.BTCNOTAR_SERVER || undefined; // undefined = public server
     return new BTCNotarClient({ serverUrl, network: process.env.BTCNOTAR_NETWORK || "mainnet" });
 }
 
@@ -54,14 +71,53 @@ async function main() {
 
     if (!cmd || cmd === "-h" || cmd === "--help") return usage();
 
-    if (cmd === "submit" || cmd === "check") {
-        const client = buildClient(args);
-        const input = args.slice(1).join(" ");
-        const hash = toHash(input);
-        if (hash !== input.toLowerCase()) console.log(`SHA-256: ${hash}`);
-        const out = cmd === "submit" ? await client.submit(hash) : await client.verify(hash);
+    if (cmd === "verify-file") {
+        const doc = takeOpt(args, "--doc");
+        const proofPath = args[1];
+        if (!proofPath) throw new Error("usage: btcnotar verify-file <proof.json> [--doc <document>]");
+        const out = await verifyProofFile(proofPath, { file: doc });
         console.log(JSON.stringify(out, null, 2));
-        if (cmd === "check") process.exit(out.valid ? 0 : 1);
+        process.exit(out.valid ? 0 : 1);
+        return;
+    }
+
+    if (["submit", "check", "wait", "save"].includes(cmd)) {
+        const client = buildClient(args);
+        const filePath = takeOpt(args, "--file");
+        let hash, out;
+        let rest = args.slice(1);
+        if (filePath) {
+            hash = sha256Hex(fs.readFileSync(filePath));
+            console.log(`SHA-256: ${hash}`);
+        } else {
+            // "save" may end with an output .json path
+            if (cmd === "save" && rest.length > 1 && rest[rest.length - 1].endsWith(".json")) out = rest.pop();
+            const input = rest.join(" ");
+            hash = toHash(input);
+            if (hash !== input.toLowerCase()) console.log(`SHA-256: ${hash}`);
+        }
+        if (cmd === "save" && filePath && rest.length) out = rest[0];
+
+        if (cmd === "submit") return console.log(JSON.stringify(await client.submit(hash), null, 2));
+
+        if (cmd === "check") {
+            const res = await client.verify(hash);
+            console.log(JSON.stringify(res, null, 2));
+            process.exit(res.valid ? 0 : 1);
+        }
+
+        if (cmd === "wait") {
+            const record = await client.waitForProof(hash, {
+                onUpdate: (u) => console.error(u.status === "pending" ? `pending, next settle: ${u.nextSettleAt}` : `in tx ${u.txid}, waiting for a block`),
+            });
+            console.log(`On the blockchain: tx ${record.txid}`);
+            return;
+        }
+
+        // save
+        const target = out || (filePath ? `${filePath}.btcnotar.json` : `${hash}.btcnotar.json`);
+        const pf = await client.saveProof(hash, target);
+        console.log(`Saved proof to ${target} (tx ${pf.txid})`);
         return;
     }
 

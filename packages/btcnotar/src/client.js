@@ -2,6 +2,9 @@ import crypto from "node:crypto";
 import axios from "axios";
 import { MempoolProvider } from "./bitcoin.js";
 import { verifyProof } from "./verify.js";
+import { toProofFile, writeProofFile } from "./prooffile.js";
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** SHA-256 of a string (UTF-8) or Buffer, as hex. */
 export function sha256Hex(data) {
@@ -32,6 +35,7 @@ function checkHash(hashHex) {
 export class BTCNotarClient {
     constructor({ serverUrl = DEFAULT_SERVER_URL, network = "mainnet", provider, timeoutMs = 20_000 } = {}) {
         this.serverUrl = serverUrl.replace(/\/+$/, "");
+        this.network = network;
         this.provider = provider || new MempoolProvider({ network });
         this.http = axios.create({ baseURL: this.serverUrl, timeout: timeoutMs, validateStatus: () => true });
     }
@@ -64,5 +68,64 @@ export class BTCNotarClient {
         if (!record) return { valid: false, reason: "unknown-hash" };
         if (record.status === "pending") return { valid: false, reason: "pending", nextSettleAt: record.nextSettleAt ?? null };
         return verifyProof(hash, record, this.provider);
+    }
+
+    /**
+     * Wait until the hash is in a Bitcoin transaction, then return its proof record.
+     * Polls the server every `intervalMs`. With `confirmed: true` it also waits for a block.
+     *
+     *   const record = await client.waitForProof(hash);              // ~1 hour
+     *   const record = await client.waitForProof(hash, { confirmed: true });
+     *
+     * Throws if the server does not know the hash, or after `timeoutMs`.
+     */
+    async waitForProof(hashHex, { intervalMs = 60_000, timeoutMs = 3 * 60 * 60 * 1000, confirmed = false, onUpdate } = {}) {
+        const hash = checkHash(hashHex);
+        const deadline = Date.now() + timeoutMs;
+        for (;;) {
+            const record = await this.getProof(hash);
+            if (!record) throw new Error(`server does not know this hash (submit it first): ${hash}`);
+            if (record.status !== "pending") {
+                if (!confirmed) return record;
+                const check = await verifyProof(hash, record, this.provider);
+                if (check.valid && check.confirmed) {
+                    return { ...record, blockHeight: check.blockHeight, blockHash: check.blockHash, blockTime: check.blockTime };
+                }
+                onUpdate?.({ status: "unconfirmed", txid: record.txid });
+            } else {
+                onUpdate?.({ status: "pending", nextSettleAt: record.nextSettleAt ?? null });
+            }
+            const left = deadline - Date.now();
+            if (left <= 0) throw new Error(`timeout: hash not ${confirmed ? "confirmed" : "anchored"} yet: ${hash}`);
+            await sleep(Math.min(intervalMs, left));
+        }
+    }
+
+    /**
+     * Download the proof as a portable proof file object (see SPEC in prooffile.js).
+     * Keep it next to your document: with it you can verify later even if this server is gone.
+     * Throws if the hash is not anchored yet.
+     */
+    async downloadProof(hashHex) {
+        const hash = checkHash(hashHex);
+        const record = await this.getProof(hash);
+        if (!record) throw new Error(`server does not know this hash: ${hash}`);
+        if (record.status === "pending") throw new Error(`not anchored yet (pending until ${record.nextSettleAt ?? "next settlement"})`);
+        // Fill block info from the chain if the server did not have it yet.
+        let full = { ...record, hash };
+        if (!full.blockHeight) {
+            const check = await verifyProof(hash, full, this.provider);
+            if (check.valid && check.confirmed) {
+                full = { ...full, blockHeight: check.blockHeight, blockHash: check.blockHash, blockTime: check.blockTime };
+            }
+        }
+        return toProofFile(full, { network: this.network, server: this.serverUrl });
+    }
+
+    /** Download the proof and save it to `filePath` (JSON). Returns the proof file object. */
+    async saveProof(hashHex, filePath) {
+        const pf = await this.downloadProof(hashHex);
+        writeProofFile(filePath, pf);
+        return pf;
     }
 }
