@@ -1,0 +1,47 @@
+{
+  "name": "btcnotar-mcp",
+  "version": "0.1.0",
+  "mcpName": "io.github.yordank/btcnotar",
+  "description": "MCP server for btcnotar: let AI agents (Claude, Cursor, ...) notarize texts and files on the Bitcoin blockchain for free, and verify proofs.",
+  "type": "module",
+  "bin": {
+    "btcnotar-mcp": "./src/index.js"
+  },
+  "main": "./src/server.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "bitcoin",
+    "timestamp",
+    "notarization",
+    "proof-of-existence",
+    "btcnotar"
+  ],
+  "author": "Yordan Karparov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yordank/BTCNotar.git",
+    "directory": "packages/btcnotar-mcp"
+  },
+  "homepage": "https://btcnotar.com",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "btcnotar": "^0.4.0",
+    "zod": "^3.25.76"
+  }
+}

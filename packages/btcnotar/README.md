@@ -6,6 +6,7 @@
 - **Private.** Only the SHA-256 hash is sent. Your file never leaves your computer.
 - **Trustless.** `verify()` checks the proof directly on the blockchain, not on our server.
 - **TypeScript types** included. Python version: `pip install btcnotar`.
+- **For AI agents:** MCP server [`btcnotar-mcp`](https://www.npmjs.com/package/btcnotar-mcp) (Claude, Cursor, VS Code).
 
 ⚡ Like it? Support with sats: `trappedknight861@walletofsatoshi.com`
 

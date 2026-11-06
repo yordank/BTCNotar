@@ -6,10 +6,11 @@
   "description": "BTCNotar workspace: the btcnotar library (packages/btcnotar) plus a demo web app (examples/webapp).",
   "workspaces": [
     "packages/btcnotar",
+    "packages/btcnotar-mcp",
     "examples/webapp"
   ],
   "scripts": {
-    "test": "npm test --workspace btcnotar",
+    "test": "npm test --workspace btcnotar && npm test --workspace btcnotar-mcp",
     "start": "npm start --workspace btcnotar-webapp-demo",
     "agents": "node agents/start.js",
     "agent:dev": "node agents/developer.js",

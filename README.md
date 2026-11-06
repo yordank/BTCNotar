@@ -20,6 +20,7 @@
 
 <ul>
   <li><code>packages/btcnotar</code> — the <strong>npm library</strong>. Install it with <code>npm install btcnotar</code>. See its <a href="./packages/btcnotar/README.md">README</a> for the full API.</li>
+  <li><code>packages/btcnotar-mcp</code> — <strong>MCP server</strong> for AI agents (Claude, Cursor, VS Code): <code>npx -y btcnotar-mcp</code>. See its <a href="./packages/btcnotar-mcp/README.md">README</a>.</li>
   <li><code>packages/python</code> — the <strong>Python client</strong> (<code>pip install btcnotar</code>, no dependencies). Same proof format. See its <a href="./packages/python/README.md">README</a>.</li>
   <li><code>spec</code> — the <a href="./spec/SPEC.md">format specification</a> and <a href="./spec/test-vectors.json">test vectors</a> for versions in other languages.</li>
   <li><code>examples/webapp</code> — a demo <strong>Express app</strong> using the library: a paid single-hash instant anchor (via Lightning), plus the library's automatic daily batch notarization wired up as a set of <code>/api/notary/*</code> endpoints.</li>

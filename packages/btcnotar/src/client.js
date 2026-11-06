@@ -38,12 +38,18 @@ export class BTCNotarClient {
 
     /** Call the server. Returns { status, data } for any HTTP status (no throw on 4xx/5xx). */
     async _call(method, pathname, body) {
-        const res = await fetch(`${this.serverUrl}${pathname}`, {
-            method,
-            headers: body ? { "content-type": "application/json" } : undefined,
-            body: body ? JSON.stringify(body) : undefined,
-            signal: AbortSignal.timeout(this.timeoutMs),
-        });
+        let res;
+        try {
+            res = await fetch(`${this.serverUrl}${pathname}`, {
+                method,
+                headers: body ? { "content-type": "application/json" } : undefined,
+                body: body ? JSON.stringify(body) : undefined,
+                signal: AbortSignal.timeout(this.timeoutMs),
+            });
+        } catch (e) {
+            const why = e?.cause?.code || e?.cause?.message || e?.name || e?.message;
+            throw new Error(`cannot reach btcnotar server ${this.serverUrl} (${why})`, { cause: e });
+        }
         const text = await res.text();
         let data = null;
         try {

@@ -97,3 +97,13 @@ test("client uses the free public server when no serverUrl is given", () => {
     assert.equal(new BTCNotarClient().serverUrl, "https://proofofexistance-production.up.railway.app");
     assert.equal(new BTCNotarClient({ serverUrl: "http://x/" }).serverUrl, "http://x");
 });
+
+test("client: clear error when the server can't be reached", async () => {
+    // a port that was just free (closed again)
+    const tmp = http.createServer();
+    await new Promise((r) => tmp.listen(0, r));
+    const port = tmp.address().port;
+    await new Promise((r) => tmp.close(r));
+    const client = new BTCNotarClient({ serverUrl: `http://127.0.0.1:${port}`, timeoutMs: 2000 });
+    await assert.rejects(() => client.submit(sha256Hex("x")), /cannot reach btcnotar server http:\/\/127\.0\.0\.1:\d+ \(ECONNREFUSED\)/);
+});

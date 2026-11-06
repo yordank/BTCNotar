@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.yordank/btcnotar",
+  "title": "btcnotar",
+  "description": "Free Bitcoin timestamps: notarize texts and files on Bitcoin and verify proofs. Only hashes are sent.",
+  "websiteUrl": "https://btcnotar.com",
+  "repository": {
+    "url": "https://github.com/yordank/BTCNotar",
+    "source": "github",
+    "subfolder": "packages/btcnotar-mcp"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "btcnotar-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "BTCNOTAR_SERVER",
+          "description": "BTCNotar server URL (default: the free public server)",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "BTCNOTAR_NETWORK",
+          "description": "mainnet or testnet (default: mainnet)",
+          "isRequired": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}

@@ -17,10 +17,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - name: Install (library only)
-        run: npm ci --workspace btcnotar --include-workspace-root=false
-      - name: Test
+      - name: Install (library + MCP server)
+        run: npm ci --workspace btcnotar --workspace btcnotar-mcp --include-workspace-root=false
+      - name: Test library
         run: npm test --workspace btcnotar
+      - name: Test MCP server
+        run: npm test --workspace btcnotar-mcp
 
   python:
     runs-on: ubuntu-latest
