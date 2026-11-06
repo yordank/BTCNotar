@@ -111,3 +111,8 @@ STATUS: REVIEW_APPROVED | task 2 | round 1
 
 STATUS: ALL_DONE
 
+
+Нови задачи в PLAN.md (2026-11-06). Агентите продължават от следващата задача.
+
+STATUS: REVIEW_APPROVED | task 2 | round 1
+
