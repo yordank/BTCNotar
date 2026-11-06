@@ -17,6 +17,7 @@ export {
     MempoolProvider,
     httpRequest,
     MAGIC,
+    OP_RETURN_MAX_BYTES,
     encodeOpReturnPayload,
     decodeOpReturnPayload,
     extractOpReturnData,

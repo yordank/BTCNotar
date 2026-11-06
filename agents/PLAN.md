@@ -25,7 +25,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] Нов вход "btcnotar/client" (client + verify + prooffile) без bitcoinjs-lib; добави го в package.json exports + тест
 
 ### По-лесно ползване
-- [ ] Добави TypeScript типове index.d.ts за всички exports; добави "types" в package.json
+- [x] Добави TypeScript типове index.d.ts за всички exports; добави "types" в package.json
 - [x] Добави sha256File(path) със stream (за големи файлове) + export + тест
 - [x] Добави client.submitMany(hashes) (и route в examples/webapp/server.js) + тест
 - [ ] DEFAULT_SERVER_URL да стане https://api.btcnotar.com (първо настрой домейна в Railway!)

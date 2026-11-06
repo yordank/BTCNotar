@@ -5,8 +5,14 @@
   "type": "module",
   "main": "index.js",
   "exports": {
-    ".": "./index.js",
-    "./client": "./client.js",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./index.js"
+    },
+    "./client": {
+      "types": "./types/client.d.ts",
+      "default": "./client.js"
+    },
     "./package.json": "./package.json"
   },
   "bin": {
@@ -17,6 +23,7 @@
     "client.js",
     "src",
     "bin",
+    "types",
     "README.md",
     "LICENSE"
   ],
@@ -49,5 +56,6 @@
     "ecpair": "^3.0.0",
     "tiny-secp256k1": "^2.2.4"
   },
-  "homepage": "https://github.com/yordank/BTCNotar#readme"
+  "homepage": "https://github.com/yordank/BTCNotar#readme",
+  "types": "./types/index.d.ts"
 }

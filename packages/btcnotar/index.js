@@ -22,4 +22,5 @@ export {
     MAGIC,
     OP_RETURN_MAX_BYTES,
     RBF_SEQUENCE,
+    httpRequest,
 } from "./src/bitcoin.js";

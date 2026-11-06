@@ -33,7 +33,8 @@ test("btcnotar/client exports the client API", () => {
         assert.equal(typeof light[name], "function", name);
     }
     const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-    assert.equal(pkg.exports["./client"], "./client.js");
+    assert.equal(pkg.exports["./client"].default, "./client.js");
+    assert.equal(pkg.exports["./client"].types, "./types/client.d.ts");
     assert.ok(pkg.files.includes("client.js"));
 });
 
