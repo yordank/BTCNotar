@@ -1,14 +1,11 @@
-import crypto from "node:crypto";
+import { sha256Hex, sha256File } from "./hash.js";
 import { MempoolProvider } from "./chain.js";
 import { verifyProof } from "./verify.js";
 import { toProofFile, writeProofFile } from "./prooffile.js";
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+export { sha256Hex, sha256File };
 
-/** SHA-256 of a string (UTF-8) or Buffer, as hex. */
-export function sha256Hex(data) {
-    return crypto.createHash("sha256").update(data).digest("hex");
-}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** The free public BTCNotar server (used when no serverUrl is given). */
 export const DEFAULT_SERVER_URL = "https://proofofexistance-production.up.railway.app";
@@ -63,6 +60,42 @@ export class BTCNotarClient {
         const res = await this._call("POST", "/api/notary/hash", { hashHex: hash });
         if (res.status >= 400) throw new Error(`server error ${res.status}: ${res.data?.error || res.statusText}`);
         return res.data;
+    }
+
+    /**
+     * Send many hashes. Uses one request per 100 hashes (falls back to one by
+     * one if the server is older). Never throws for a single bad hash:
+     * returns one result per hash, in the same order — { hash, status, ... } or { hash, error }.
+     */
+    async submitMany(hashes) {
+        if (!Array.isArray(hashes)) throw new Error("submitMany needs an array of hashes");
+        const results = [];
+        for (let i = 0; i < hashes.length; i += 100) {
+            const chunk = hashes.slice(i, i + 100);
+            const valid = [];
+            const slot = chunk.map((h) => {
+                try {
+                    valid.push(checkHash(h));
+                    return valid.length - 1;
+                } catch (e) {
+                    return { hash: h, error: e.message };
+                }
+            });
+            let got = [];
+            if (valid.length) {
+                const res = await this._call("POST", "/api/notary/hashes", { hashes: valid });
+                if (res.status === 404) {
+                    // old server: no batch route
+                    for (const h of valid) got.push(await this.submit(h).catch((e) => ({ hash: h, error: e.message })));
+                } else if (res.status >= 400) {
+                    throw new Error(`server error ${res.status}: ${res.data?.error || res.statusText}`);
+                } else {
+                    got = res.data.results;
+                }
+            }
+            for (const s of slot) results.push(typeof s === "number" ? got[s] : s);
+        }
+        return results;
     }
 
     /**

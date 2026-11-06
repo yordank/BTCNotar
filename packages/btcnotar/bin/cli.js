@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import fs from "node:fs";
-import { BTCNotar, BTCNotarClient, sha256Hex, verifyProofFile } from "../index.js";
+import { BTCNotar, BTCNotarClient, sha256Hex, sha256File, verifyProofFile } from "../index.js";
 import { FileStore } from "../src/store.js";
 
 // Load ./.env if it exists (Node 20.12+). No dotenv dependency needed.
@@ -95,7 +94,7 @@ async function main() {
         let hash, out;
         let rest = args.slice(1);
         if (filePath) {
-            hash = sha256Hex(fs.readFileSync(filePath));
+            hash = await sha256File(filePath);
             console.log(`SHA-256: ${hash}`);
         } else {
             // "save" may end with an output .json path

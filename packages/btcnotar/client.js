@@ -1,7 +1,7 @@
 // Light entry: everything to use a BTCNotar server and verify proofs.
 // No bitcoinjs-lib / secp256k1 is loaded.
 //   import { BTCNotarClient, verifyProofFile } from "btcnotar/client";
-export { BTCNotarClient, sha256Hex, DEFAULT_SERVER_URL } from "./src/client.js";
+export { BTCNotarClient, sha256Hex, sha256File, DEFAULT_SERVER_URL } from "./src/client.js";
 export { verifyProof } from "./src/verify.js";
 export {
     verifyProofFile,

@@ -1,5 +1,5 @@
 export { BTCNotar, selectUtxo } from "./src/notary.js";
-export { BTCNotarClient, sha256Hex, DEFAULT_SERVER_URL } from "./src/client.js";
+export { BTCNotarClient, sha256Hex, sha256File, DEFAULT_SERVER_URL } from "./src/client.js";
 export { verifyProof } from "./src/verify.js";
 export {
     verifyProofFile,

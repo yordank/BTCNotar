@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 import { MempoolProvider } from "./chain.js";
 import { verifyProof } from "./verify.js";
+import { sha256Hex, sha256File } from "./hash.js";
 
 /**
  * Portable proof file: everything needed to verify a hash later,
@@ -81,8 +81,7 @@ export async function verifyProofFile(proofFileOrPath, { file, hash, provider } 
 
     let expected = hash ? String(hash).toLowerCase() : null;
     if (file) {
-        const data = Buffer.isBuffer(file) ? file : fs.readFileSync(file);
-        expected = crypto.createHash("sha256").update(data).digest("hex");
+        expected = Buffer.isBuffer(file) ? sha256Hex(file) : await sha256File(file);
     }
     if (expected && expected !== pf.hash) {
         return { valid: false, reason: "document-hash-mismatch", hash: pf.hash, documentHash: expected };

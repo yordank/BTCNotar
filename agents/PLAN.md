@@ -26,8 +26,8 @@ Reviewer я маркира `- [x]`, когато я одобри.
 
 ### По-лесно ползване
 - [ ] Добави TypeScript типове index.d.ts за всички exports; добави "types" в package.json
-- [ ] Добави sha256File(path) със stream (за големи файлове) + export + тест
-- [ ] Добави client.submitMany(hashes) (и route в examples/webapp/server.js) + тест
+- [x] Добави sha256File(path) със stream (за големи файлове) + export + тест
+- [x] Добави client.submitMany(hashes) (и route в examples/webapp/server.js) + тест
 - [ ] DEFAULT_SERVER_URL да стане https://api.btcnotar.com (първо настрой домейна в Railway!)
 
 ### Уеб приложение (examples/webapp)

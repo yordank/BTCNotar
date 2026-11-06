@@ -364,6 +364,47 @@ app.post("/api/notary/hash", async (req, res) => {
 });
 
 
+// POST /api/notary/hashes  body: { hashes: [hashHex, ...] }  (max 100)
+// Queue many hashes in one request. Each hash gets its own result:
+// { hash, status, ... } or { hash, error }. Rate limit counts every new hash.
+app.post("/api/notary/hashes", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const list = req.body?.hashes;
+        if (!Array.isArray(list) || list.length === 0) return res.status(400).json({ error: "hashes must be a non-empty array" });
+        if (list.length > 100) return res.status(400).json({ error: "max 100 hashes per request" });
+
+        const admin = isAdmin(req);
+        const results = [];
+        for (const raw of list) {
+            const hash = String(raw || "").trim().toLowerCase();
+            if (!isValidHashHex(hash)) {
+                results.push({ hash: raw, error: "hashHex must be 64 hex chars" });
+                continue;
+            }
+            const known = await n.getStatus(hash);
+            if (known) {
+                results.push(known);
+                continue;
+            }
+            if (!admin && rateLimited(req.ip, HASH_RATE_PER_MIN)) {
+                results.push({ hash, error: `too many requests: max ${HASH_RATE_PER_MIN} hashes per minute` });
+                continue;
+            }
+            if (!admin && (await n.pendingCount()) >= MAX_PENDING) {
+                results.push({ hash, error: "queue is full, try again after the next settlement" });
+                continue;
+            }
+            await n.addHash(hash);
+            results.push(await n.getStatus(hash));
+        }
+        res.json({ results, pendingCount: await n.pendingCount() });
+    } catch (e) {
+        res.status(500).json({ error: e?.message || String(e) });
+    }
+});
+
 // POST /api/notary/settle
 // Force-settle the current batch immediately (normally happens automatically).
 app.post("/api/notary/settle", async (req, res) => {
