@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as bitcoin from "bitcoinjs-lib";
 
 // Protocol magic so an OP_RETURN payload can be recognized as a BTCNotar
@@ -84,31 +83,68 @@ export function extractOpReturnData(tx) {
  * Swap for a different implementation (e.g. a local bitcoind/Electrum
  * client) as long as it exposes the same four methods.
  */
+/**
+ * Small fetch() helper. Throws on HTTP errors; the error has
+ * `response: { status, data }` (like axios) so callers can tell
+ * "rejected by the server" from "network problem" (no `response`).
+ */
+export async function httpRequest(url, { method = "GET", body, headers, timeoutMs = 20_000 } = {}) {
+    const res = await fetch(url, { method, body, headers, signal: AbortSignal.timeout(timeoutMs) });
+    const text = await res.text();
+    let data = text;
+    if ((res.headers.get("content-type") || "").includes("json")) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            /* keep text */
+        }
+    }
+    if (!res.ok) {
+        const msg = typeof data === "string" ? data : data?.error || res.statusText;
+        const err = new Error(`HTTP ${res.status} ${method} ${url}: ${msg}`);
+        err.response = { status: res.status, data };
+        throw err;
+    }
+    return data;
+}
+
+/**
+ * Chain data provider backed by the public mempool.space REST API.
+ * Swap for a different implementation (e.g. a local bitcoind/Electrum
+ * client) as long as it exposes the same four methods.
+ */
 export class MempoolProvider {
-    constructor({ network = "mainnet", apiBase } = {}) {
+    constructor({ network = "mainnet", apiBase, timeoutMs = 20_000 } = {}) {
         this.network = network;
         this.apiBase = apiBase || (network === "mainnet" ? "https://mempool.space/api" : `https://mempool.space/${network}/api`);
+        this.timeoutMs = timeoutMs;
+    }
+
+    _get(pathname) {
+        return httpRequest(`${this.apiBase}${pathname}`, { timeoutMs: this.timeoutMs });
     }
 
     async fetchUtxos(address) {
-        const res = await axios.get(`${this.apiBase}/address/${address}/utxo`);
-        return res.data;
+        return this._get(`/address/${address}/utxo`);
     }
 
     async fetchFeeRateSatVb() {
         try {
-            const res = await axios.get(`${this.apiBase}/v1/fees/recommended`);
-            return Number(res.data?.halfHourFee ?? 10);
+            const data = await this._get(`/v1/fees/recommended`);
+            return Number(data?.halfHourFee ?? 10);
         } catch {
             return 10;
         }
     }
 
     async broadcastTx(rawHex) {
-        const res = await axios.post(`${this.apiBase}/tx`, rawHex, {
+        const txid = await httpRequest(`${this.apiBase}/tx`, {
+            method: "POST",
+            body: rawHex,
             headers: { "Content-Type": "text/plain" },
+            timeoutMs: this.timeoutMs,
         });
-        return res.data; // txid
+        return String(txid).trim();
     }
 
     /**
@@ -118,8 +154,7 @@ export class MempoolProvider {
      */
     async fetchTransaction(txid) {
         try {
-            const res = await axios.get(`${this.apiBase}/tx/${txid}`);
-            const tx = res.data;
+            const tx = await this._get(`/tx/${txid}`);
             return {
                 txid: tx.txid,
                 confirmed: !!tx.status?.confirmed,

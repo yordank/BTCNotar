@@ -20,8 +20,8 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] bitcoin.js: включи RBF (sequence 0xfffffffd), за да може fee да се вдигне + тест
 
 ### По-лек пакет
-- [ ] Замени axios с вградения fetch (Node 18+); махни axios от dependencies; тестовете да минават
-- [ ] Махни dotenv от библиотеката; да остане само в bin/cli.js (или да се зарежда само ако има .env)
+- [x] Замени axios с вградения fetch (Node 18+); махни axios от dependencies; тестовете да минават
+- [x] Махни dotenv от библиотеката; да остане само в bin/cli.js (или да се зарежда само ако има .env)
 - [ ] Нов вход "btcnotar/client" (client + verify + prooffile) без bitcoinjs-lib; добави го в package.json exports + тест
 
 ### По-лесно ползване

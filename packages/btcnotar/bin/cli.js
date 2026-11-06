@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-import "dotenv/config";
 import fs from "node:fs";
 import { BTCNotar, BTCNotarClient, sha256Hex, verifyProofFile } from "../index.js";
 import { FileStore } from "../src/store.js";
+
+// Load ./.env if it exists (Node 20.12+). No dotenv dependency needed.
+try {
+    process.loadEnvFile?.();
+} catch {
+    /* no .env file */
+}
 
 function usage() {
     console.log(`btcnotar - batch Bitcoin notarization CLI
@@ -31,6 +37,8 @@ Environment variables:
   BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions [required]
   BTCNOTAR_NETWORK   "mainnet" or "testnet" (default: mainnet)
   BTCNOTAR_STORE     Path to the JSON store file (default: ./.btcnotar/store.json)
+
+  Variables can also be in a .env file in the current folder (Node 20.12+).
 `);
 }
 

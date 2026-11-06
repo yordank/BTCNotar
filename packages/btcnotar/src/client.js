@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import axios from "axios";
 import { MempoolProvider } from "./bitcoin.js";
 import { verifyProof } from "./verify.js";
 import { toProofFile, writeProofFile } from "./prooffile.js";
@@ -37,13 +36,31 @@ export class BTCNotarClient {
         this.serverUrl = serverUrl.replace(/\/+$/, "");
         this.network = network;
         this.provider = provider || new MempoolProvider({ network });
-        this.http = axios.create({ baseURL: this.serverUrl, timeout: timeoutMs, validateStatus: () => true });
+        this.timeoutMs = timeoutMs;
+    }
+
+    /** Call the server. Returns { status, data } for any HTTP status (no throw on 4xx/5xx). */
+    async _call(method, pathname, body) {
+        const res = await fetch(`${this.serverUrl}${pathname}`, {
+            method,
+            headers: body ? { "content-type": "application/json" } : undefined,
+            body: body ? JSON.stringify(body) : undefined,
+            signal: AbortSignal.timeout(this.timeoutMs),
+        });
+        const text = await res.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch {
+            data = { error: text };
+        }
+        return { status: res.status, statusText: res.statusText, data };
     }
 
     /** Send a hash to the server's queue. Returns { hash, addedAt, nextSettleAt, ... }. */
     async submit(hashHex) {
         const hash = checkHash(hashHex);
-        const res = await this.http.post("/api/notary/hash", { hashHex: hash });
+        const res = await this._call("POST", "/api/notary/hash", { hashHex: hash });
         if (res.status >= 400) throw new Error(`server error ${res.status}: ${res.data?.error || res.statusText}`);
         return res.data;
     }
@@ -54,7 +71,7 @@ export class BTCNotarClient {
      */
     async getProof(hashHex) {
         const hash = checkHash(hashHex);
-        const res = await this.http.get(`/api/notary/proof/${hash}`);
+        const res = await this._call("GET", `/api/notary/proof/${hash}`);
         if (res.status === 404) return null;
         if (res.status === 202) return { status: "pending", ...res.data };
         if (res.status >= 400) throw new Error(`server error ${res.status}: ${res.data?.error || res.statusText}`);
