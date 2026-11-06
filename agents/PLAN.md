@@ -8,6 +8,14 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] Добави unit тестове за MemoryStore и FileStore в packages/btcnotar/test
 - [x] Proof файл: waitForProof, saveProof, verifyProofFile + CLI wait/save/verify-file (версия 0.3.0)
 
+## За Jordan (ръчно — агентите не пипат тези редове)
+
+- (Jordan) Публикувай npm 0.4.0: `git pull`, `cd packages\btcnotar`, `npm whoami` (трябва jordan21, иначе `npm login`), `npm publish`
+- (Jordan) Публикувай Python 0.1.0 в PyPI: акаунт в pypi.org, после `cd packages\python`, `pip install build twine`, `python -m build`, `twine upload dist/*`
+- (Jordan) След PyPI: смени текста "Ideas: versions for Python..." на сайта, че Python вече е наличен (`pip install btcnotar`)
+- (Jordan) Провери, че Railway е направил deploy на новия сайт (бутон "Download proof" и "Verify a proof file")
+- (Jordan) Настрой домейна api.btcnotar.com в Railway, после смени DEFAULT_SERVER_URL (виж по-долу)
+
 ## Следващи задачи
 
 ### Бъгове в BTCNotar (packages/btcnotar/src)
