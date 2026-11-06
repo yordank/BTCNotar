@@ -21,3 +21,18 @@ jobs:
         run: npm ci --workspace btcnotar --include-workspace-root=false
       - name: Test
         run: npm test --workspace btcnotar
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test
+        working-directory: packages/python/tests
+        run: PYTHONPATH=../src python -m unittest -v

@@ -18,10 +18,10 @@
 
 <h2>📦 Repository layout</h2>
 
-<p>This repo is an npm workspace with two packages:</p>
-
 <ul>
   <li><code>packages/btcnotar</code> — the <strong>npm library</strong>. Install it with <code>npm install btcnotar</code>. See its <a href="./packages/btcnotar/README.md">README</a> for the full API.</li>
+  <li><code>packages/python</code> — the <strong>Python client</strong> (<code>pip install btcnotar</code>, no dependencies). Same proof format. See its <a href="./packages/python/README.md">README</a>.</li>
+  <li><code>spec</code> — the <a href="./spec/SPEC.md">format specification</a> and <a href="./spec/test-vectors.json">test vectors</a> for versions in other languages.</li>
   <li><code>examples/webapp</code> — a demo <strong>Express app</strong> using the library: a paid single-hash instant anchor (via Lightning), plus the library's automatic daily batch notarization wired up as a set of <code>/api/notary/*</code> endpoints.</li>
 </ul>
 

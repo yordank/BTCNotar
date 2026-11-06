@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "btcnotar"
+version = "0.1.0"
+description = "Free Bitcoin notarization: prove a text or file existed at a certain time. Send a SHA-256 hash, verify the proof yourself on the Bitcoin blockchain."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Yordan Karparov" }]
+keywords = ["bitcoin", "timestamp", "notarization", "merkle-tree", "op_return", "proof-of-existence", "sha256"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://btcnotar.com"
+Source = "https://github.com/yordank/BTCNotar"
+
+[project.scripts]
+btcnotar = "btcnotar.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -37,7 +37,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 ### Спецификация и други езици
 - [x] SPEC.md: формат BTN1, Merkle правила, proof файл, API на сървъра
 - [x] test-vectors.json: примерни hash-ове, root, proof-ове (за проверка на версиите на други езици) + тест, че JS ги минава
-- [ ] Python версия (pip): client + verifyProofFile, минава test-vectors.json
+- [x] Python версия (pip): client + verifyProofFile, минава test-vectors.json
 - [ ] Go, Rust, .NET (NuGet) версии — една задача за всеки език, след Python
 
 ### Тестове и CI

@@ -5,3 +5,9 @@ node_modules
 .data
 .btcnotar
 .vs/
+
+# Python
+__pycache__/
+*.egg-info/
+packages/python/build/
+packages/python/dist/
