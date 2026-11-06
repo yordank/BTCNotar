@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { ECPairFactory } from "ecpair";
@@ -114,7 +115,7 @@ test("OP_RETURN payload: BTN1 + 32 bytes, round trip, bad input", () => {
 });
 
 function txFixture(value) {
-    const keyPair = ECPair.makeRandom({ network });
+    const keyPair = ECPair.makeRandom({ network, rng: (n) => crypto.randomBytes(n) });
     const fromAddress = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }).address;
     const utxo = { txid: "3".repeat(64), vout: 2, value };
     return { keyPair, fromAddress, utxo, dataBuffer: encodeOpReturnPayload("cd".repeat(32)), network };

@@ -12,7 +12,7 @@ export function sha256hex(s) {
 }
 
 export function testWif() {
-    const keyPair = ECPair.makeRandom({ network: bitcoin.networks.testnet });
+    const keyPair = ECPair.makeRandom({ network: bitcoin.networks.testnet, rng: (n) => crypto.randomBytes(n) });
     return keyPair.toWIF();
 }
 
