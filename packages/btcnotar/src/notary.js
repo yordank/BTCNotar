@@ -23,6 +23,22 @@ function checkHash(hashHex) {
 }
 
 /**
+ * Pick a UTXO that pays the fee. Confirmed ones first, then the biggest.
+ * Unconfirmed ones are allowed (change from the previous batch may still be in the mempool).
+ */
+export function selectUtxo(utxos, feeSat, address = "") {
+    if (!utxos?.length) throw new Error(`No UTXOs available. Fund address: ${address}`);
+    const ok = utxos
+        .filter((u) => Number(u.value) > feeSat)
+        .sort((a, b) => (b.status?.confirmed !== false) - (a.status?.confirmed !== false) || Number(b.value) - Number(a.value));
+    if (!ok.length) {
+        const max = Math.max(...utxos.map((u) => Number(u.value)));
+        throw new Error(`No UTXO is big enough for the fee (${feeSat} sat, biggest UTXO ${max} sat). Fund address: ${address}`);
+    }
+    return ok[0];
+}
+
+/**
  * BTCNotar batches document hashes, anchors each batch's Merkle root to
  * Bitcoin via a single OP_RETURN transaction, and hands back per-hash
  * proofs that can be independently and unambiguously verified later
@@ -85,6 +101,12 @@ export class BTCNotar {
     }
 
     async _settle() {
+        // First finish any batch that was signed but not sent (e.g. crash or network error).
+        await this._resumeSigned();
+        if ((await this._signedBatches()).length) {
+            throw new Error("previous batch is signed but not broadcast yet; will retry");
+        }
+
         const pending = await this.store.listPending();
         if (!pending.length) return null;
 
@@ -92,12 +114,9 @@ export class BTCNotar {
         const tree = new MerkleTree(hashes);
         const merkleRoot = tree.root;
 
-        const utxos = await this.provider.fetchUtxos(this.address);
-        if (!utxos.length) throw new Error(`No UTXOs available. Fund address: ${this.address}`);
-
         const feeRate = this.feeRateSatVb || (await this.provider.fetchFeeRateSatVb());
         const feeSat = Math.ceil(ANCHOR_TX_VBYTES * feeRate);
-        const utxo = utxos[0];
+        const utxo = selectUtxo(await this.provider.fetchUtxos(this.address), feeSat, this.address);
 
         const payload = encodeOpReturnPayload(merkleRoot);
         const { rawHex, txid } = createOpReturnTx({
@@ -108,7 +127,6 @@ export class BTCNotar {
             feeSat,
             network: this.network,
         });
-        const broadcastTxid = await this.provider.broadcastTx(rawHex);
 
         const proofs = {};
         hashes.forEach((h, i) => {
@@ -118,11 +136,13 @@ export class BTCNotar {
         const batch = {
             batchId: merkleRoot,
             merkleRoot,
-            txid: broadcastTxid || txid,
+            txid,
             createdAt: new Date().toISOString(),
             hashes,
             proofs,
-            status: "broadcast",
+            status: "signed", // saved BEFORE broadcast, so a crash can't lose the proofs
+            rawHex,
+            queue: pending, // to put the hashes back if the network rejects the tx
             blockHeight: null,
             blockHash: null,
             blockTime: null,
@@ -130,6 +150,48 @@ export class BTCNotar {
 
         await this.store.saveBatch(batch);
         await this.store.clearPending(pending.map((p) => p.id));
+        await this._broadcastBatch(batch);
+        return batch;
+    }
+
+    async _signedBatches() {
+        if (typeof this.store.listBatches !== "function") return [];
+        return (await this.store.listBatches()).filter((b) => b.status === "signed");
+    }
+
+    /** Broadcast every batch that is still "signed". Errors are logged, not thrown. */
+    async _resumeSigned() {
+        for (const batch of await this._signedBatches()) {
+            try {
+                await this._broadcastBatch(batch);
+            } catch (err) {
+                console.error(`[btcnotar] re-broadcast of ${batch.txid} failed:`, err?.message || err);
+            }
+        }
+    }
+
+    /**
+     * Send a signed batch. On success: status "broadcast".
+     * If the tx is already known to the chain: also "broadcast".
+     * If the node rejected it (HTTP error with a response): the batch is removed
+     * and its hashes go back to the queue. Network error: stays "signed", retried later.
+     */
+    async _broadcastBatch(batch) {
+        try {
+            await this.provider.broadcastTx(batch.rawHex);
+        } catch (err) {
+            const known = await this.provider.fetchTransaction(batch.txid).catch(() => null);
+            if (!known) {
+                if (err?.response && typeof this.store.deleteBatch === "function") {
+                    await this.store.deleteBatch(batch.batchId);
+                    for (const entry of batch.queue || []) await this.store.addPending(entry);
+                }
+                throw err;
+            }
+        }
+        batch.status = "broadcast";
+        delete batch.queue;
+        await this.store.saveBatch(batch);
         return batch;
     }
 
@@ -170,6 +232,7 @@ export class BTCNotar {
         if (this._settling) return null;
         this._settling = true; // set before any await, so two calls can never both pass
         try {
+            if ((await this._signedBatches()).length) await this._resumeSigned();
             const pending = await this.store.listPending();
             if (!pending.length) return null;
             const oldest = Math.min(...pending.map((p) => Date.parse(p.addedAt) || now));
@@ -198,6 +261,7 @@ export class BTCNotar {
             proof: batch.proofs[hash],
             txid: batch.txid,
             batchId: batch.batchId,
+            batchStatus: batch.status,
             createdAt: batch.createdAt,
             blockHeight: batch.blockHeight,
             blockHash: batch.blockHash,

@@ -6,6 +6,8 @@ import * as bitcoin from "bitcoinjs-lib";
 // contents as a Merkle root. "BTN1" = format version 1.
 export const MAGIC = Buffer.from("BTN1", "ascii");
 export const OP_RETURN_MAX_BYTES = 80;
+/** nSequence that signals opt-in Replace-By-Fee (BIP 125). */
+export const RBF_SEQUENCE = 0xfffffffd;
 
 /** Pack a 32-byte Merkle root (hex) into the on-chain OP_RETURN payload. */
 export function encodeOpReturnPayload(merkleRootHex) {
@@ -39,6 +41,7 @@ export function createOpReturnTx({ keyPair, fromAddress, utxo, dataBuffer, feeSa
     psbt.addInput({
         hash: utxo.txid,
         index: utxo.vout,
+        sequence: RBF_SEQUENCE, // opt-in Replace-By-Fee: the fee can be raised later
         witnessUtxo: { script: p2wpkh.output, value: BigInt(utxo.value) },
     });
 

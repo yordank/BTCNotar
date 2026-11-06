@@ -14,10 +14,10 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] store.js: saveBatch и findBatchByHash да ползват hash с малки букви (сега hash с главни букви не се намира) + тест
 - [x] notary.js: addHash да приема само 64 hex знака (като клиента) + тест
 - [x] notary.js: addHash да не добавя hash, който вече е anchored (да върне съществуващия proof) + тест
-- [ ] notary.js: в _settle първо записвай batch със status "signed" и rawHex, после broadcast; при рестарт изпрати отново неизпратените + тест
-- [ ] notary.js: избирай UTXO, който стига за fee (не само utxos[0]); ясна грешка ако няма + тест
-- [ ] store.js: FileStore да пише атомарно (временен файл + rename) + тест
-- [ ] bitcoin.js: включи RBF (sequence 0xfffffffd), за да може fee да се вдигне + тест
+- [x] notary.js: в _settle първо записвай batch със status "signed" и rawHex, после broadcast; при рестарт изпрати отново неизпратените + тест
+- [x] notary.js: избирай UTXO, който стига за fee (не само utxos[0]); ясна грешка ако няма + тест
+- [x] store.js: FileStore да пише атомарно (временен файл + rename) + тест
+- [x] bitcoin.js: включи RBF (sequence 0xfffffffd), за да може fee да се вдигне + тест
 
 ### По-лек пакет
 - [ ] Замени axios с вградения fetch (Node 18+); махни axios от dependencies; тестовете да минават

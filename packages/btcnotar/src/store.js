@@ -46,6 +46,17 @@ export class MemoryStore {
     async listBatches() {
         return [...this.batches.values()];
     }
+
+    async deleteBatch(batchId) {
+        const batch = this.batches.get(batchId);
+        if (!batch) return false;
+        this.batches.delete(batchId);
+        for (const h of batch.hashes) {
+            const key = String(h).toLowerCase();
+            if (this.hashIndex.get(key) === batchId) this.hashIndex.delete(key);
+        }
+        return true;
+    }
 }
 
 /**
@@ -87,7 +98,10 @@ export class FileStore extends MemoryStore {
             batches: Object.fromEntries(this.batches),
         };
         fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-        fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+        // Atomic: write a temp file, then rename. A crash can't leave half a JSON file.
+        const tmp = `${this.filePath}.tmp-${process.pid}`;
+        fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+        fs.renameSync(tmp, this.filePath);
     }
 
     async addPending(entry) {
@@ -105,5 +119,11 @@ export class FileStore extends MemoryStore {
         await super.saveBatch(batch);
         this._persist();
         return batch;
+    }
+
+    async deleteBatch(batchId) {
+        const removed = await super.deleteBatch(batchId);
+        if (removed) this._persist();
+        return removed;
     }
 }
