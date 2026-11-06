@@ -118,7 +118,7 @@ STATUS: REVIEW_APPROVED | task 2 | round 1
 
 ## 2026-11-06 · Claude (ръчно, без агентите)
 
-Направени 21 задачи от PLAN.md, всяка с тестове и отделен commit:
+Направени 22 задачи от PLAN.md, всяка с тестове и отделен commit:
 - бъгове в BTCNotar (hash с главни букви, 64 hex, повторно закотвяне, запис преди broadcast, избор на UTXO, атомарен FileStore, RBF)
 - fetch вместо axios, без dotenv, вход `btcnotar/client`, TypeScript типове, `sha256File`, `submitMany` (+ route `/api/notary/hashes`)
 - уеб: сваляне на proof файл (`/api/notary/prooffile/:hash`) и проверка на proof файл в браузъра
