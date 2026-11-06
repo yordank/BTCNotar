@@ -6,9 +6,25 @@
 - **Private.** Only the SHA-256 hash is sent. Files never leave your computer.
 - **Trustless.** Proofs are checked against the Bitcoin blockchain itself.
 
-Works with Claude Desktop, Claude Code, Cursor, VS Code and any other MCP client.
+Works with Claude, ChatGPT, Cursor, VS Code and any other MCP client — as a remote URL or on your computer.
 
-## Install
+## Option 1: remote — nothing to install
+
+Add this URL as a custom connector:
+
+```
+https://btcnotar.com/mcp
+```
+
+- **Claude** (web, desktop, phone): Settings → Connectors → Add custom connector → paste the URL.
+- **Claude Code:** `claude mcp add --transport http btcnotar https://btcnotar.com/mcp`
+- **Cursor / VS Code / others:** add a server with type `http` and this URL.
+
+The remote server works with **texts and hashes** (it cannot read files on your computer).
+For a file, the agent sends its SHA-256 hash. Tools: `notarize`, `notarize_many`, `check`,
+`get_proof` (returns the proof file JSON), `verify_proof`, `hash`.
+
+## Option 2: local — can notarize your files
 
 ### Claude Desktop
 
@@ -69,7 +85,7 @@ Needs Node.js 18 or newer.
 
 > Check `contract.pdf.btcnotar.json` against `contract.pdf`.
 
-## Tools
+## Tools (local)
 
 | Tool | What it does |
 |---|---|

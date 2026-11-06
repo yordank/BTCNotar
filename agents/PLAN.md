@@ -13,6 +13,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - (Jordan) Публикувай npm 0.4.0: `git pull`, `cd packages\btcnotar`, `npm whoami` (трябва jordan21, иначе `npm login`), `npm publish`
 - (Jordan) СЛЕД npm 0.4.0: публикувай MCP сървъра: `cd packages\btcnotar-mcp`, `npm publish`
 - (Jordan) После го добави в MCP Registry: свали `mcp-publisher` (github.com/modelcontextprotocol/registry/releases, файл mcp-publisher_windows_amd64.tar.gz), после в `packages\btcnotar-mcp`: `mcp-publisher login github`, `mcp-publisher publish`
+- (Jordan) След deploy в Railway: пробвай отдалечения MCP — в claude.ai Settings → Connectors → Add custom connector → https://btcnotar.com/mcp (или адреса на Railway + /mcp)
 - (Jordan) Публикувай Python 0.1.0 в PyPI: акаунт в pypi.org, после `cd packages\python`, `pip install build twine`, `python -m build`, `twine upload dist/*`
 - (Jordan) След PyPI: смени текста "Ideas: versions for Python..." на сайта, че Python вече е наличен (`pip install btcnotar`)
 - (Jordan) Провери, че Railway е направил deploy на новия сайт (бутон "Download proof" и "Verify a proof file")
@@ -56,6 +57,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] GitHub Actions: npm test при всеки push и PR (Node 18, 20, 22)
 
 ### За AI агенти
+- [x] Отдалечен MCP на сайта: POST /mcp (Streamable HTTP), инструменти notarize, notarize_many, check, get_proof, verify_proof, hash; същите лимити по IP + e2e тест на server.js
 - [x] MCP сървър btcnotar-mcp (packages/btcnotar-mcp): notarize, notarize_many, check, save_proof, verify_proof_file, hash + тестове
 - [ ] AGENTS.md в корена на репото: команди, правила (не променяй формата BTN1, всяка задача с тест), структура
 - [ ] /llms.txt и OpenAPI (openapi.json) на сървъра, ясни кодове за грешки

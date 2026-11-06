@@ -734,6 +734,29 @@
 
             <section class="card lib-gap">
                 <div class="hd">
+                    <h2 data-i18n="libAiTitle"></h2>
+                    <small data-i18n="libAiSub"></small>
+                </div>
+                <div class="bd">
+                    <p class="lib-label" data-i18n="libAiRemote"></p>
+                    <div class="row">
+                        <pre class="code" id="mcpUrl" style="flex:1;margin:0"></pre>
+                        <button type="button" id="mcpCopy" data-i18n="libAiCopy"></button>
+                    </div>
+                    <p class="smallhint" data-i18n="libAiRemoteHint"></p>
+                    <p class="lib-label" data-i18n="libAiLocal"></p>
+<pre class="code">claude mcp add btcnotar -- npx -y btcnotar-mcp</pre>
+                    <p class="smallhint" data-i18n="libAiLocalHint"></p>
+                    <p class="lib-label" data-i18n="libAiAsk"></p>
+                    <ul class="icon-list">
+                        <li><span class="icon">💬</span><span data-i18n="libAiEx1"></span></li>
+                        <li><span class="icon">💬</span><span data-i18n="libAiEx2"></span></li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="card lib-gap">
+                <div class="hd">
                     <h2 data-i18n="libUseTitle"></h2>
                     <small>Node.js · npm</small>
                 </div>
@@ -988,6 +1011,17 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Ideas: versions for Python, Rust, Go and .NET (NuGet). Want to help? → GitHub",
                 libSingleNote: "Need it right now, for one hash? Use a single transaction (paid with Lightning).",
                 libSingleBtn: "Single transaction →",
+                libAiTitle: "Use it from AI agents (MCP)",
+                libAiSub: "Claude, ChatGPT, Cursor, VS Code — no code needed",
+                libAiRemote: "1. Easiest: add this URL as a custom connector (nothing to install):",
+                libAiCopy: "Copy",
+                libAiCopied: "Copied ✓",
+                libAiRemoteHint: "Claude: Settings → Connectors → Add custom connector. Works with texts and hashes.",
+                libAiLocal: "2. On your computer (can notarize your files):",
+                libAiLocalHint: "Needs Node.js. Claude Desktop, Cursor and VS Code: see the btcnotar-mcp README on npm.",
+                libAiAsk: "Then just ask:",
+                libAiEx1: "“Notarize this text on Bitcoin: …”",
+                libAiEx2: "“Is it on the blockchain yet? Give me the proof file.”",
                 libDownload: "⬇ Download proof (.json)",
                 libDownloadHint: "Keep this file with your document. You can verify it later without this site.",
                 libVfTitle: "Verify a proof file",
@@ -1114,6 +1148,17 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Идеи: версии за Python, Rust, Go и .NET (NuGet). Искаш да помогнеш? → GitHub",
                 libSingleNote: "Трябва ти веднага, за един хеш? Използвай единична транзакция (плащане с Lightning).",
                 libSingleBtn: "Единична транзакция →",
+                libAiTitle: "Ползвай го от AI агенти (MCP)",
+                libAiSub: "Claude, ChatGPT, Cursor, VS Code — без код",
+                libAiRemote: "1. Най-лесно: добави този адрес като custom connector (без инсталация):",
+                libAiCopy: "Копирай",
+                libAiCopied: "Копирано ✓",
+                libAiRemoteHint: "Claude: Settings → Connectors → Add custom connector. Работи с текст и хешове.",
+                libAiLocal: "2. На твоя компютър (може да закотвя и файлове):",
+                libAiLocalHint: "Трябва Node.js. За Claude Desktop, Cursor и VS Code виж README на btcnotar-mcp в npm.",
+                libAiAsk: "После просто питай:",
+                libAiEx1: "„Закотви този текст в Bitcoin: …“",
+                libAiEx2: "„Вече в блокчейна ли е? Дай ми файла с доказателството.“",
                 libDownload: "⬇ Свали доказателството (.json)",
                 libDownloadHint: "Пази този файл с документа. Можеш да го провериш и без този сайт.",
                 libVfTitle: "Провери файл с доказателство",
@@ -1240,6 +1285,17 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Ideen: Versionen für Python, Rust, Go und .NET (NuGet). Willst du helfen? → GitHub",
                 libSingleNote: "Sofort und nur für einen Hash? Nutze eine Einzeltransaktion (Zahlung mit Lightning).",
                 libSingleBtn: "Einzeltransaktion →",
+                libAiTitle: "Nutzung mit KI-Agenten (MCP)",
+                libAiSub: "Claude, ChatGPT, Cursor, VS Code — ohne Code",
+                libAiRemote: "1. Am einfachsten: diese URL als Custom Connector hinzufügen (keine Installation):",
+                libAiCopy: "Kopieren",
+                libAiCopied: "Kopiert ✓",
+                libAiRemoteHint: "Claude: Settings → Connectors → Add custom connector. Funktioniert mit Texten und Hashes.",
+                libAiLocal: "2. Auf deinem Computer (kann auch Dateien notarisieren):",
+                libAiLocalHint: "Benötigt Node.js. Claude Desktop, Cursor und VS Code: siehe README von btcnotar-mcp auf npm.",
+                libAiAsk: "Dann einfach fragen:",
+                libAiEx1: "„Notarisiere diesen Text auf Bitcoin: …“",
+                libAiEx2: "„Ist es schon in der Blockchain? Gib mir die Nachweisdatei.“",
                 libDownload: "⬇ Nachweis herunterladen (.json)",
                 libDownloadHint: "Bewahre diese Datei mit dem Dokument auf. Du kannst sie später ohne diese Seite prüfen.",
                 libVfTitle: "Nachweisdatei prüfen",
@@ -1447,6 +1503,18 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
             document.getElementById("libGoSingle").addEventListener("click", () => {
                 setActiveTab("app");
                 window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+        })();
+
+        /* ================= MCP URL for AI agents ================= */
+        (function () {
+            const url = location.origin + "/mcp";
+            document.getElementById("mcpUrl").textContent = url;
+            const btn = document.getElementById("mcpCopy");
+            btn.addEventListener("click", async () => {
+                try { await navigator.clipboard.writeText(url); } catch { /* old browser */ }
+                btn.textContent = t("libAiCopied");
+                setTimeout(() => (btn.textContent = t("libAiCopy")), 1500);
             });
         })();
 

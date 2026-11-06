@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import crypto from "node:crypto";
 import "dotenv/config";
-import { BTCNotar, FileStore, toProofFile } from "btcnotar";
+import { BTCNotar, FileStore, MempoolProvider, toProofFile } from "btcnotar";
+import { createRemoteServer } from "btcnotar-mcp";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 // Breez SDK Spark (CJS)
 import pkg from "@breeztech/breez-sdk-spark";
@@ -135,6 +137,8 @@ const notary = OPRETURN_WIF_MAINNET
           network: "mainnet",
           store: new FileStore({ filePath: NOTARY_STORE_PATH }),
           intervalMs: SETTLE_INTERVAL_MIN * 60 * 1000,
+          // Optional: own mempool.space-compatible API (default: mempool.space)
+          provider: process.env.NOTARY_MEMPOOL_API ? new MempoolProvider({ apiBase: process.env.NOTARY_MEMPOOL_API }) : undefined,
       })
     : null;
 
@@ -332,34 +336,72 @@ function anchorResponse(p, alreadyAnchored) {
 // Batch notarization (btcnotar library)
 // =========================
 
+class QueueError extends Error {
+    constructor(status, message) {
+        super(message);
+        this.status = status;
+    }
+}
+
+// Queue one hash with the free-queue limits. Used by the REST API and by MCP.
+// Returns the status ({ status: "pending"|"anchored", ... }). Throws QueueError.
+async function queueHash(n, rawHash, { ip, admin }) {
+    const hash = String(rawHash || "").trim().toLowerCase();
+    if (!isValidHashHex(hash)) throw new QueueError(400, "hashHex must be 64 hex chars");
+
+    // Already anchored or already waiting: just report it (no limits needed).
+    const known = await n.getStatus(hash);
+    if (known) return known;
+
+    if (!admin) {
+        if (rateLimited(ip, HASH_RATE_PER_MIN)) {
+            throw new QueueError(429, `too many requests: max ${HASH_RATE_PER_MIN} hashes per minute`);
+        }
+        if ((await n.pendingCount()) >= MAX_PENDING) {
+            throw new QueueError(503, "queue is full, try again after the next settlement");
+        }
+    }
+    await n.addHash(hash);
+    return n.getStatus(hash);
+}
+
+// Portable proof file for an anchored hash (block info read from the chain).
+async function proofFileFor(n, hash, server) {
+    const status = await n.getStatus(hash);
+    if (!status) throw new QueueError(404, "no proof found for that hash");
+    if (status.status === "pending") {
+        throw new QueueError(202, `not anchored yet (pending until ${status.nextSettleAt ?? "next settlement"})`);
+    }
+    let record = status;
+    const check = await n.verify(hash).catch(() => null);
+    if (check?.valid) record = { ...status, blockHeight: check.blockHeight, blockHash: check.blockHash, blockTime: check.blockTime };
+    return toProofFile(record, { network: n.networkName || "mainnet", server });
+}
+
+// Same checks as BTCNotarClient.verify(), but on this server.
+async function verifyHash(n, rawHash) {
+    const hash = String(rawHash || "").trim().toLowerCase();
+    if (!isValidHashHex(hash)) throw new QueueError(400, "hash must be 64 hex chars");
+    const status = await n.getStatus(hash);
+    if (!status) return { valid: false, reason: "unknown-hash" };
+    if (status.status === "pending") return { valid: false, reason: "pending", nextSettleAt: status.nextSettleAt };
+    return n.verify(hash);
+}
+
+function publicUrl(req) {
+    return `${req.protocol}://${req.get("host")}`;
+}
+
 // POST /api/notary/hash  body: { hashHex }
 // Queue a hash for the next automatic settlement.
 app.post("/api/notary/hash", async (req, res) => {
     const n = requireNotary(res);
     if (!n) return;
     try {
-        const hashHex = String(req.body?.hashHex || "").trim().toLowerCase();
-        if (!isValidHashHex(hashHex)) {
-            return res.status(400).json({ error: "hashHex must be 64 hex chars" });
-        }
-
-        // Already anchored or already waiting: just report it (no limits needed).
-        const known = await n.getStatus(hashHex);
-        if (known) return res.json(known);
-
-        if (!isAdmin(req)) {
-            if (rateLimited(req.ip, HASH_RATE_PER_MIN)) {
-                return res.status(429).json({ error: `too many requests: max ${HASH_RATE_PER_MIN} hashes per minute` });
-            }
-            if ((await n.pendingCount()) >= MAX_PENDING) {
-                return res.status(503).json({ error: "queue is full, try again after the next settlement" });
-            }
-        }
-
-        await n.addHash(hashHex);
-        res.json({ ...(await n.getStatus(hashHex)), pendingCount: await n.pendingCount() });
+        const status = await queueHash(n, req.body?.hashHex, { ip: req.ip, admin: isAdmin(req) });
+        res.json({ ...status, pendingCount: await n.pendingCount() });
     } catch (e) {
-        res.status(500).json({ error: e?.message || String(e) });
+        res.status(e instanceof QueueError ? e.status : 500).json({ error: e?.message || String(e) });
     }
 });
 
@@ -375,29 +417,15 @@ app.post("/api/notary/hashes", async (req, res) => {
         if (!Array.isArray(list) || list.length === 0) return res.status(400).json({ error: "hashes must be a non-empty array" });
         if (list.length > 100) return res.status(400).json({ error: "max 100 hashes per request" });
 
-        const admin = isAdmin(req);
+        const opts = { ip: req.ip, admin: isAdmin(req) };
         const results = [];
         for (const raw of list) {
-            const hash = String(raw || "").trim().toLowerCase();
-            if (!isValidHashHex(hash)) {
-                results.push({ hash: raw, error: "hashHex must be 64 hex chars" });
-                continue;
+            try {
+                results.push(await queueHash(n, raw, opts));
+            } catch (e) {
+                if (!(e instanceof QueueError)) throw e;
+                results.push({ hash: raw, error: e.message });
             }
-            const known = await n.getStatus(hash);
-            if (known) {
-                results.push(known);
-                continue;
-            }
-            if (!admin && rateLimited(req.ip, HASH_RATE_PER_MIN)) {
-                results.push({ hash, error: `too many requests: max ${HASH_RATE_PER_MIN} hashes per minute` });
-                continue;
-            }
-            if (!admin && (await n.pendingCount()) >= MAX_PENDING) {
-                results.push({ hash, error: "queue is full, try again after the next settlement" });
-                continue;
-            }
-            await n.addHash(hash);
-            results.push(await n.getStatus(hash));
         }
         res.json({ results, pendingCount: await n.pendingCount() });
     } catch (e) {
@@ -443,21 +471,11 @@ app.get("/api/notary/prooffile/:hash", async (req, res) => {
     try {
         const hash = String(req.params.hash || "").trim().toLowerCase();
         if (!isValidHashHex(hash)) return res.status(400).json({ error: "hash must be 64 hex chars" });
-        const status = await n.getStatus(hash);
-        if (!status) return res.status(404).json({ error: "no proof found for that hash" });
-        if (status.status === "pending") return res.status(202).json(status);
-
-        // Block info from the chain (the stored copy may be empty right after broadcast).
-        let record = status;
-        const check = await n.verify(hash).catch(() => null);
-        if (check?.valid) record = { ...status, blockHeight: check.blockHeight, blockHash: check.blockHash, blockTime: check.blockTime };
-
-        const server = `${req.protocol}://${req.get("host")}`;
-        const file = toProofFile(record, { network: n.networkName || "mainnet", server });
+        const file = await proofFileFor(n, hash, publicUrl(req));
         res.setHeader("Content-Disposition", `attachment; filename="${hash}.btcnotar.json"`);
         res.json(file);
     } catch (e) {
-        res.status(500).json({ error: e?.message || String(e) });
+        res.status(e instanceof QueueError ? e.status : 500).json({ error: e?.message || String(e) });
     }
 });
 
@@ -477,6 +495,56 @@ app.get("/api/notary/verify/:hash", async (req, res) => {
         res.status(500).json({ error: e?.message || String(e) });
     }
 });
+
+// =========================
+// Remote MCP server (Streamable HTTP) for AI agents: https://<host>/mcp
+// Add this URL as a custom connector in Claude, ChatGPT, Cursor, ...
+// Stateless: a new MCP server per request; same free-queue limits per IP.
+// =========================
+function mcpBackend(n, req) {
+    const opts = { ip: req.ip, admin: false };
+    return {
+        network: n.networkName || "mainnet",
+        submit: (hash) => queueHash(n, hash, opts),
+        async submitMany(hashes) {
+            const out = [];
+            for (const h of hashes) {
+                try {
+                    out.push(await queueHash(n, h, opts));
+                } catch (e) {
+                    if (!(e instanceof QueueError)) throw e;
+                    out.push({ hash: h, error: e.message });
+                }
+            }
+            return out;
+        },
+        verify: (hash) => verifyHash(n, hash),
+        downloadProof: (hash) => proofFileFor(n, String(hash || "").trim().toLowerCase(), publicUrl(req)),
+    };
+}
+
+app.post("/mcp", async (req, res) => {
+    if (!notary) return res.status(503).json({ jsonrpc: "2.0", error: { code: -32000, message: "notary not configured" }, id: null });
+    try {
+        const server = createRemoteServer({ client: mcpBackend(notary, req), proofProvider: notary.provider });
+        const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+        res.on("close", () => {
+            transport.close();
+            server.close();
+        });
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+    } catch (e) {
+        console.error("MCP error:", e);
+        if (!res.headersSent) res.status(500).json({ jsonrpc: "2.0", error: { code: -32603, message: "internal error" }, id: null });
+    }
+});
+
+// Stateless server: no SSE stream and no sessions.
+const mcpNotAllowed = (req, res) =>
+    res.status(405).set("Allow", "POST").json({ jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed." }, id: null });
+app.get("/mcp", mcpNotAllowed);
+app.delete("/mcp", mcpNotAllowed);
 
 app.get("/", (req, res) => res.redirect("/timestamp.html"));
 

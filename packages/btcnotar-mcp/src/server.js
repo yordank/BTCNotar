@@ -242,3 +242,166 @@ export function createServer({ client = clientFromEnv(), proofProvider = proofPr
 
     return server;
 }
+
+// ---------------------------------------------------------------------------
+// Remote mode (HTTP, hosted on a btcnotar server). The server can't see the
+// user's files, so there are no file paths: only texts and hashes. Proof files
+// are returned as JSON (get_proof) and verified from JSON (verify_proof).
+// ---------------------------------------------------------------------------
+
+const remoteTarget = {
+    text: target.text,
+    hash: target.hash,
+};
+
+/**
+ * MCP server for remote use. `client` must have: network, submit(hash),
+ * submitMany(hashes), verify(hash), downloadProof(hash).
+ * `proofProvider`: chain provider for verify_proof (default: mempool.space for the proof's network).
+ */
+export function createRemoteServer({ client, proofProvider } = {}) {
+    if (!client) throw new Error("createRemoteServer needs a client");
+    const server = new McpServer(
+        { name: "btcnotar", version: VERSION },
+        {
+            instructions:
+                "btcnotar proves that a text existed at a certain time, using the Bitcoin blockchain. Free. " +
+                "Only the SHA-256 hash is stored. For a FILE: compute its SHA-256 on the user's side and pass 'hash' " +
+                "(this remote server cannot read local files). " +
+                "Flow: notarize -> wait about 1 hour -> check -> get_proof (give the JSON to the user to keep as <name>.btcnotar.json). " +
+                "verify_proof checks such a JSON proof against the blockchain.",
+        }
+    );
+
+    server.registerTool(
+        "hash",
+        {
+            title: "SHA-256 hash",
+            description: "Compute the SHA-256 hash of a text (UTF-8). For files, compute the hash locally instead.",
+            inputSchema: { text: z.string().describe("Text to hash.") },
+            annotations: { readOnlyHint: true, openWorldHint: false },
+        },
+        async ({ text }) => ok(`SHA-256: ${sha256Hex(text)}`, { hash: sha256Hex(text) })
+    );
+
+    server.registerTool(
+        "notarize",
+        {
+            title: "Notarize on Bitcoin",
+            description:
+                "Notarize a text or a SHA-256 hash on the Bitcoin blockchain for free. For a file, pass its SHA-256 as 'hash'. " +
+                "Returns status 'pending' and nextSettleAt (about 1 hour). Use 'check' after that time, then 'get_proof'.",
+            inputSchema: remoteTarget,
+            annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+        },
+        async (args) => {
+            try {
+                const h = await hashOf(args);
+                const r = await client.submit(h);
+                const summary =
+                    r.status === "anchored"
+                        ? `Already notarized (tx ${r.txid}). Use 'check' to verify.`
+                        : `Queued. It will be written to Bitcoin at ${r.nextSettleAt ?? "the next settlement"}.`;
+                return ok(summary, { ...r, hash: h });
+            } catch (e) {
+                return fail(e);
+            }
+        }
+    );
+
+    server.registerTool(
+        "notarize_many",
+        {
+            title: "Notarize many on Bitcoin",
+            description: "Notarize many texts or hashes in one call (same Bitcoin transaction). One result per item, same order.",
+            inputSchema: {
+                texts: z.array(z.string()).optional().describe("Texts to notarize."),
+                hashes: z.array(z.string()).optional().describe("SHA-256 hashes (64 hex)."),
+            },
+            annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+        },
+        async ({ texts = [], hashes = [] }) => {
+            try {
+                const items = [...texts.map((t) => ({ text: t, hash: sha256Hex(t) })), ...hashes.map((h) => ({ hash: h }))];
+                if (!items.length) throw new Error("give texts or hashes");
+                if (items.length > 100) throw new Error("max 100 items per call");
+                const res = await client.submitMany(items.map((i) => i.hash));
+                const out = items.map((item, i) => ({ ...item, ...res[i] }));
+                const bad = out.filter((o) => o.error).length;
+                return ok(`Sent ${out.length - bad} of ${out.length}.${bad ? ` ${bad} failed (see "error").` : ""}`, out);
+            } catch (e) {
+                return fail(e);
+            }
+        }
+    );
+
+    server.registerTool(
+        "check",
+        {
+            title: "Check on Bitcoin",
+            description:
+                "Check if a text or hash is on the Bitcoin blockchain. The proof is verified against the blockchain. " +
+                "Returns block height and date when valid.",
+            inputSchema: remoteTarget,
+            annotations: { readOnlyHint: true, openWorldHint: true },
+        },
+        async (args) => {
+            try {
+                const h = await hashOf(args);
+                const r = await client.verify(h);
+                return ok(explain(r, client.network), { hash: h, ...r });
+            } catch (e) {
+                return fail(e);
+            }
+        }
+    );
+
+    server.registerTool(
+        "get_proof",
+        {
+            title: "Get proof file",
+            description:
+                "Get the proof as a JSON proof file (btcnotar-proof). Give it to the user to save as <document>.btcnotar.json " +
+                "next to the document: with it the document can be verified later without any btcnotar server. " +
+                "Works only after the hash is in a Bitcoin transaction (use 'check' first).",
+            inputSchema: remoteTarget,
+            annotations: { readOnlyHint: true, openWorldHint: true },
+        },
+        async (args) => {
+            try {
+                const h = await hashOf(args);
+                const pf = await client.downloadProof(h);
+                return ok(`Proof file for ${h}. Save it as ${h}.btcnotar.json (or <document>.btcnotar.json).`, pf);
+            } catch (e) {
+                return fail(e);
+            }
+        }
+    );
+
+    server.registerTool(
+        "verify_proof",
+        {
+            title: "Verify proof",
+            description:
+                "Verify a btcnotar proof file (the JSON object) against the Bitcoin blockchain. " +
+                "Optionally give the document's text or SHA-256 hash to check that the proof belongs to it.",
+            inputSchema: {
+                proof: z.record(z.string(), z.any()).describe("The proof file JSON object (format: btcnotar-proof)."),
+                text: z.string().optional().describe("The original text (optional)."),
+                hash: z.string().optional().describe("SHA-256 of the original document (optional)."),
+            },
+            annotations: { readOnlyHint: true, openWorldHint: true },
+        },
+        async ({ proof, text, hash }) => {
+            try {
+                const expected = text !== undefined ? sha256Hex(text) : hash;
+                const r = await verifyProofFile(proof, { hash: expected, provider: proofProvider });
+                return ok(explain(r, proof.network || "mainnet"), r);
+            } catch (e) {
+                return fail(e);
+            }
+        }
+    );
+
+    return server;
+}

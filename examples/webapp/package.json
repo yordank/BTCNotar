@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Demo app for the btcnotar library: single-hash instant OP_RETURN anchoring (paid via Lightning) plus daily batch notarization via BTCNotar.",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "btcnotar": "*",
@@ -18,6 +19,8 @@
     "ecpair": "^3.0.0",
     "express": "^5.2.1",
     "qrcode": "^1.5.4",
-    "tiny-secp256k1": "^2.2.4"
+    "tiny-secp256k1": "^2.2.4",
+    "btcnotar-mcp": "*",
+    "@modelcontextprotocol/sdk": "^1.32.2"
   }
 }
