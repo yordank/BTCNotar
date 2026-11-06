@@ -15,8 +15,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // Size of our tx: 1 P2WPKH input + OP_RETURN (36 bytes) + change ≈ 157 vB.
 const ANCHOR_TX_VBYTES = 160;
 
-function isHex(s) {
-    return typeof s === "string" && /^[0-9a-fA-F]+$/.test(s) && s.length % 2 === 0;
+/** Check a SHA-256 hash (64 hex chars) and return it in lower case. */
+function checkHash(hashHex) {
+    const hash = typeof hashHex === "string" ? hashHex.trim().toLowerCase() : "";
+    if (!/^[0-9a-f]{64}$/.test(hash)) throw new Error(`hash must be 64 hex chars (SHA-256), got "${hashHex}"`);
+    return hash;
 }
 
 /**
@@ -47,10 +50,15 @@ export class BTCNotar {
         this._timer = null;
     }
 
-    /** Queue a document hash for the next settlement batch. */
+    /**
+     * Queue a document hash for the next settlement batch.
+     * If the hash is already anchored, nothing is queued and the existing
+     * proof is returned with `alreadyAnchored: true`.
+     */
     async addHash(hashHex) {
-        if (!isHex(hashHex)) throw new Error(`hash must be a hex string, got "${hashHex}"`);
-        const hash = hashHex.toLowerCase();
+        const hash = checkHash(hashHex);
+        const anchored = await this.getProof(hash);
+        if (anchored) return { ...anchored, alreadyAnchored: true };
         const queued = (await this.store.listPending()).find((p) => p.hash === hash);
         if (queued) return queued; // already waiting: don't add it twice
         const entry = { id: crypto.randomUUID(), hash, addedAt: new Date().toISOString() };
@@ -147,8 +155,7 @@ export class BTCNotar {
      * proof without a new transaction (`alreadyAnchored: true`).
      */
     async anchorNow(hashHex) {
-        if (!isHex(hashHex)) throw new Error(`hash must be a hex string, got "${hashHex}"`);
-        const hash = hashHex.toLowerCase();
+        const hash = checkHash(hashHex);
         const existing = await this.getProof(hash);
         if (existing) return { ...existing, alreadyAnchored: true };
         await this.addHash(hash);
@@ -182,7 +189,7 @@ export class BTCNotar {
 
     /** Look up the stored proof + anchor info for a given document hash. */
     async getProof(hashHex) {
-        const hash = hashHex.toLowerCase();
+        const hash = String(hashHex).toLowerCase();
         const batch = await this.store.findBatchByHash(hash);
         if (!batch) return null;
         return {

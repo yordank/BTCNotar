@@ -11,9 +11,9 @@ Reviewer я маркира `- [x]`, когато я одобри.
 ## Следващи задачи
 
 ### Бъгове в BTCNotar (packages/btcnotar/src)
-- [ ] store.js: saveBatch и findBatchByHash да ползват hash с малки букви (сега hash с главни букви не се намира) + тест
-- [ ] notary.js: addHash да приема само 64 hex знака (като клиента) + тест
-- [ ] notary.js: addHash да не добавя hash, който вече е anchored (да върне съществуващия proof) + тест
+- [x] store.js: saveBatch и findBatchByHash да ползват hash с малки букви (сега hash с главни букви не се намира) + тест
+- [x] notary.js: addHash да приема само 64 hex знака (като клиента) + тест
+- [x] notary.js: addHash да не добавя hash, който вече е anchored (да върне съществуващия proof) + тест
 - [ ] notary.js: в _settle първо записвай batch със status "signed" и rawHex, после broadcast; при рестарт изпрати отново неизпратените + тест
 - [ ] notary.js: избирай UTXO, който стига за fee (не само utxos[0]); ясна грешка ако няма + тест
 - [ ] store.js: FileStore да пише атомарно (временен файл + rename) + тест

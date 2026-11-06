@@ -150,3 +150,23 @@ test("addHash() does not queue the same hash twice", async () => {
     assert.equal(a.id, b.id);
     assert.equal(await notary.pendingCount(), 1);
 });
+
+test("addHash() accepts only 64 hex chars", async () => {
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider: new FakeProvider() });
+    await assert.rejects(() => notary.addHash("abcd"), /64 hex/);
+    await assert.rejects(() => notary.addHash("z".repeat(64)), /64 hex/);
+    await assert.rejects(() => notary.addHash(null), /64 hex/);
+    await assert.rejects(() => notary.anchorNow("abcd"), /64 hex/);
+    const entry = await notary.addHash(sha256hex("ok").toUpperCase());
+    assert.equal(entry.hash, sha256hex("ok"));
+});
+
+test("addHash() does not queue a hash that is already anchored", async () => {
+    const notary = new BTCNotar({ wif: testWif(), network: "testnet", store: new MemoryStore(), provider: new FakeProvider() });
+    const h = sha256hex("anchored once");
+    const first = await notary.anchorNow(h);
+    const again = await notary.addHash(h);
+    assert.equal(again.alreadyAnchored, true);
+    assert.equal(again.txid, first.txid);
+    assert.equal(await notary.pendingCount(), 0);
+});

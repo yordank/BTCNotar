@@ -97,3 +97,11 @@ test("FileStore: throws on a corrupt store file", () => {
         fs.rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("store: hash with upper case letters is found (lower and upper)", async () => {
+    const store = new MemoryStore();
+    const upper = "AB".repeat(32);
+    await store.saveBatch({ batchId: "r1", merkleRoot: "r1", hashes: [upper], proofs: {} });
+    assert.equal((await store.findBatchByHash(upper.toLowerCase()))?.batchId, "r1");
+    assert.equal((await store.findBatchByHash(upper))?.batchId, "r1");
+});

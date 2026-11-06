@@ -30,7 +30,7 @@ export class MemoryStore {
 
     async saveBatch(batch) {
         this.batches.set(batch.batchId, batch);
-        for (const h of batch.hashes) this.hashIndex.set(h, batch.batchId);
+        for (const h of batch.hashes) this.hashIndex.set(String(h).toLowerCase(), batch.batchId);
         return batch;
     }
 
@@ -39,7 +39,7 @@ export class MemoryStore {
     }
 
     async findBatchByHash(hashHex) {
-        const batchId = this.hashIndex.get(hashHex.toLowerCase());
+        const batchId = this.hashIndex.get(String(hashHex).toLowerCase());
         return batchId ? this.batches.get(batchId) || null : null;
     }
 
@@ -77,7 +77,7 @@ export class FileStore extends MemoryStore {
     _reindex() {
         this.hashIndex = new Map();
         for (const batch of this.batches.values()) {
-            for (const h of batch.hashes) this.hashIndex.set(h, batch.batchId);
+            for (const h of batch.hashes) this.hashIndex.set(String(h).toLowerCase(), batch.batchId);
         }
     }
 
