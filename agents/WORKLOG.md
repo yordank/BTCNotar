@@ -116,3 +116,18 @@ STATUS: ALL_DONE
 
 STATUS: REVIEW_APPROVED | task 2 | round 1
 
+## 2026-11-06 · Claude (ръчно, без агентите)
+
+Направени 21 задачи от PLAN.md, всяка с тестове и отделен commit:
+- бъгове в BTCNotar (hash с главни букви, 64 hex, повторно закотвяне, запис преди broadcast, избор на UTXO, атомарен FileStore, RBF)
+- fetch вместо axios, без dotenv, вход `btcnotar/client`, TypeScript типове, `sha256File`, `submitMany` (+ route `/api/notary/hashes`)
+- уеб: сваляне на proof файл (`/api/notary/prooffile/:hash`) и проверка на proof файл в браузъра
+- `spec/SPEC.md`, `spec/test-vectors.json`, Python пакет `packages/python`
+- тестове за verify.js, bitcoin.js, CLI; GitHub Actions (Node 18/20/22, Python 3.9/3.12/3.13)
+
+`npm test`: 91 теста, всички минават. Python: 12 теста, всички минават. Версия на npm пакета: 0.4.0 (не е публикувана).
+
+Остава: Go/Rust/.NET. DEFAULT_SERVER_URL чака домейна.
+
+STATUS: REVIEW_APPROVED | task 2 | round 1
+

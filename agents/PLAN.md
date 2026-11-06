@@ -28,7 +28,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [x] Добави TypeScript типове index.d.ts за всички exports; добави "types" в package.json
 - [x] Добави sha256File(path) със stream (за големи файлове) + export + тест
 - [x] Добави client.submitMany(hashes) (и route в examples/webapp/server.js) + тест
-- [ ] DEFAULT_SERVER_URL да стане https://api.btcnotar.com (първо настрой домейна в Railway!)
+- (чака Jordan: първо домейн api.btcnotar.com в Railway, после стане задача) DEFAULT_SERVER_URL да стане https://api.btcnotar.com
 
 ### Уеб приложение (examples/webapp)
 - [x] Бутон "Download proof" на сайта: сваля <hash>.btcnotar.json във формата на prooffile.js

@@ -5,6 +5,7 @@
 - **Free.** No Bitcoin, no wallet, no key. The public server pays the fee.
 - **Private.** Only the SHA-256 hash is sent. Your file never leaves your computer.
 - **Trustless.** `verify()` checks the proof directly on the blockchain, not on our server.
+- **TypeScript types** included. Python version: `pip install btcnotar`.
 
 ⚡ Like it? Support with sats: `trappedknight861@walletofsatoshi.com`
 
@@ -57,11 +58,10 @@ if (result.valid) {
 
 ```js
 // notarize-file.mjs
-import fs from "node:fs";
-import { BTCNotarClient, sha256Hex } from "btcnotar";
+import { BTCNotarClient, sha256File } from "btcnotar";
 
 const client = new BTCNotarClient();
-const hash = sha256Hex(fs.readFileSync("contract.pdf"));
+const hash = await sha256File("contract.pdf"); // reads the file as a stream, works for big files
 
 console.log("SHA-256:", hash);
 console.log(await client.submit(hash));
@@ -79,12 +79,8 @@ import { BTCNotarClient, sha256Hex } from "btcnotar";
 const client = new BTCNotarClient();
 const texts = ["first text", "second text", "third text"];
 
-const results = [];
-for (const text of texts) {
-  const hash = sha256Hex(text);
-  const r = await client.submit(hash);
-  results.push({ text, hash, status: r.status, nextSettleAt: r.nextSettleAt });
-}
+const sent = await client.submitMany(texts.map((t) => sha256Hex(t))); // one request per 100 hashes
+const results = texts.map((text, i) => ({ text, hash: sent[i].hash, status: sent[i].status ?? sent[i].error }));
 
 fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
 console.log("Saved to results.json");
@@ -223,9 +219,21 @@ npx btcnotar settle                      # send the transaction now
 npx btcnotar verify <hash>               # check on the blockchain
 ```
 
+Other settings: `BTCNOTAR_NETWORK` (`mainnet`/`testnet`), `BTCNOTAR_STORE` (store file),
+`BTCNOTAR_MEMPOOL_API` (your own mempool.space API). They can also be in a `.env` file (Node 20.12+).
+
 ---
 
 ## API
+
+### Light import: `btcnotar/client`
+
+Only need the free server and verification? Import from `btcnotar/client`.
+It does not load `bitcoinjs-lib` (no key, no signing code):
+
+```js
+import { BTCNotarClient, sha256File, verifyProofFile } from "btcnotar/client";
+```
 
 ### `new BTCNotarClient(options?)` — free public server
 
@@ -234,9 +242,11 @@ npx btcnotar verify <hash>               # check on the blockchain
 | `serverUrl` | public server | your own server URL |
 | `network` | `"mainnet"` | `"mainnet"` or `"testnet"` |
 | `provider` | `MempoolProvider` | where `verify()` reads the blockchain |
+| `timeoutMs` | `20000` | HTTP timeout |
 
 - `submit(hash)` — add a hash to the queue → `{ status, hash, addedAt, nextSettleAt }`
 - `verify(hash)` — check on the blockchain → see [What verify() returns](#what-verify-returns)
+- `submitMany(hashes)` — many hashes, one request per 100. One result per hash, same order: `{ status, ... }` or `{ hash, error }`
 - `getProof(hash)` — raw proof, `{ status: "pending" }`, or `null`
 - `waitForProof(hash, { intervalMs, timeoutMs, confirmed, onUpdate })` — wait until the hash is in a transaction (with `confirmed: true` — in a block). Default: check every minute, give up after 3 hours
 - `downloadProof(hash)` — proof file object (see below)
@@ -269,9 +279,10 @@ Verify a saved proof file against the blockchain. No server is used.
 
 Only `hash`, `merkleRoot`, `proof`, `txid` and `network` are needed to verify. The rest is for people to read.
 
-### `sha256Hex(textOrBuffer)`
+### `sha256Hex(textOrBuffer)` / `sha256File(path)`
 
 SHA-256 of a string (UTF-8) or a Buffer, as a hex string.
+`sha256File` reads a file as a stream (any size) and returns a Promise.
 
 ### `new BTCNotar(options)` — your own notary
 
@@ -284,11 +295,22 @@ SHA-256 of a string (UTF-8) or a Buffer, as a hex string.
 | `feeRateSatVb` | live from mempool.space | fixed fee (sat/vB) |
 | `provider` | `MempoolProvider` | blockchain backend |
 
+How `settle()` keeps you safe:
+
+- The signed transaction and all proofs are **saved before** it is sent. If the process stops, the next `settle()` / `start()` sends it again.
+- If the network rejects it, the hashes go back to the queue.
+- It picks a UTXO that is big enough for the fee.
+- The transaction uses Replace-By-Fee, so you can raise the fee if it is stuck.
+
 Methods: `address`, `addHash(hash)`, `exportProof(hash)`, `saveProof(hash, filePath)`, `pendingCount()`, `settle()`, `anchorNow(hash)`, `start()`, `stop()`, `settleIfDue()`, `getStatus(hash)`, `getProof(hash)`, `verify(hash)`, `refreshStatus(batchId)`.
 
 ### Other exports
 
-`MerkleTree`, `verifyProof(hash, proof, provider)`, `readProofFile`, `writeProofFile`, `toProofFile`, `MemoryStore`, `FileStore`, `MempoolProvider`, `DEFAULT_SERVER_URL`.
+`MerkleTree`, `verifyProof(hash, proof, provider)`, `readProofFile`, `writeProofFile`, `toProofFile`, `MemoryStore`, `FileStore`, `MempoolProvider`, `selectUtxo`, `DEFAULT_SERVER_URL`.
+
+Your own store (e.g. a database): implement `addPending`, `listPending`, `clearPending`, `saveBatch`, `getBatch`, `findBatchByHash`, `listBatches`, `deleteBatch` (see `types/index.d.ts`).
+
+The full format is in [spec/SPEC.md](https://github.com/yordank/BTCNotar/blob/main/spec/SPEC.md).
 
 ---
 
