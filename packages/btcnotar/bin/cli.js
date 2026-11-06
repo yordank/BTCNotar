@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { BTCNotar, BTCNotarClient, sha256Hex, sha256File, verifyProofFile } from "../index.js";
+import { BTCNotar, BTCNotarClient, MempoolProvider, sha256Hex, sha256File, verifyProofFile } from "../index.js";
 import { FileStore } from "../src/store.js";
 
 // Load ./.env if it exists (Node 20.12+). No dotenv dependency needed.
@@ -36,9 +36,18 @@ Environment variables:
   BTCNOTAR_WIF       Bitcoin private key (WIF) used to fund/sign anchor transactions [required]
   BTCNOTAR_NETWORK   "mainnet" or "testnet" (default: mainnet)
   BTCNOTAR_STORE     Path to the JSON store file (default: ./.btcnotar/store.json)
+  BTCNOTAR_MEMPOOL_API  Blockchain API (mempool.space compatible). Default: https://mempool.space/api
 
   Variables can also be in a .env file in the current folder (Node 20.12+).
 `);
+}
+
+function network() {
+    return process.env.BTCNOTAR_NETWORK || "mainnet";
+}
+
+function buildProvider() {
+    return new MempoolProvider({ network: network(), apiBase: process.env.BTCNOTAR_MEMPOOL_API || undefined });
 }
 
 function buildNotary() {
@@ -47,9 +56,8 @@ function buildNotary() {
         console.error("Missing BTCNOTAR_WIF environment variable.");
         process.exit(1);
     }
-    const network = process.env.BTCNOTAR_NETWORK || "mainnet";
     const filePath = process.env.BTCNOTAR_STORE || "./.btcnotar/store.json";
-    return new BTCNotar({ wif, network, store: new FileStore({ filePath }) });
+    return new BTCNotar({ wif, network: network(), store: new FileStore({ filePath }), provider: buildProvider() });
 }
 
 function toHash(input) {
@@ -69,7 +77,7 @@ function takeOpt(args, name) {
 
 function buildClient(args) {
     const serverUrl = takeOpt(args, "--server") || process.env.BTCNOTAR_SERVER || undefined; // undefined = public server
-    return new BTCNotarClient({ serverUrl, network: process.env.BTCNOTAR_NETWORK || "mainnet" });
+    return new BTCNotarClient({ serverUrl, network: network(), provider: buildProvider() });
 }
 
 async function main() {
@@ -82,7 +90,9 @@ async function main() {
         const doc = takeOpt(args, "--doc");
         const proofPath = args[1];
         if (!proofPath) throw new Error("usage: btcnotar verify-file <proof.json> [--doc <document>]");
-        const out = await verifyProofFile(proofPath, { file: doc });
+        // Network comes from the proof file, unless a custom API is set.
+        const provider = process.env.BTCNOTAR_MEMPOOL_API ? buildProvider() : undefined;
+        const out = await verifyProofFile(proofPath, { file: doc, provider });
         console.log(JSON.stringify(out, null, 2));
         process.exit(out.valid ? 0 : 1);
         return;

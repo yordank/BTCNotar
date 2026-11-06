@@ -41,7 +41,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [ ] Go, Rust, .NET (NuGet) версии — една задача за всеки език, след Python
 
 ### Тестове и CI
-- [ ] Тестове за verify.js (всички reason стойности)
-- [ ] Тестове за bitcoin.js: encode/decode OP_RETURN, extractOpReturnData, createOpReturnTx (dust, малко пари)
-- [ ] Тестове за bin/cli.js (submit, check, save, verify-file с фалшив сървър)
-- [ ] GitHub Actions: npm test при всеки push и PR (Node 18, 20, 22)
+- [x] Тестове за verify.js (всички reason стойности)
+- [x] Тестове за bitcoin.js: encode/decode OP_RETURN, extractOpReturnData, createOpReturnTx (dust, малко пари)
+- [x] Тестове за bin/cli.js (submit, check, save, verify-file с фалшив сървър)
+- [x] GitHub Actions: npm test при всеки push и PR (Node 18, 20, 22)
