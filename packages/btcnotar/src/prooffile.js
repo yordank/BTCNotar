@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { MempoolProvider } from "./bitcoin.js";
+import { MempoolProvider } from "./chain.js";
 import { verifyProof } from "./verify.js";
 
 /**

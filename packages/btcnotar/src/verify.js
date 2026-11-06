@@ -1,5 +1,5 @@
 import { MerkleTree } from "./merkle.js";
-import { extractOpReturnData } from "./bitcoin.js";
+import { extractOpReturnData } from "./chain.js";
 
 /**
  * Verify a proof record against the live blockchain, trusting nobody:

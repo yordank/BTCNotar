@@ -22,7 +22,7 @@ Reviewer я маркира `- [x]`, когато я одобри.
 ### По-лек пакет
 - [x] Замени axios с вградения fetch (Node 18+); махни axios от dependencies; тестовете да минават
 - [x] Махни dotenv от библиотеката; да остане само в bin/cli.js (или да се зарежда само ако има .env)
-- [ ] Нов вход "btcnotar/client" (client + verify + prooffile) без bitcoinjs-lib; добави го в package.json exports + тест
+- [x] Нов вход "btcnotar/client" (client + verify + prooffile) без bitcoinjs-lib; добави го в package.json exports + тест
 
 ### По-лесно ползване
 - [ ] Добави TypeScript типове index.d.ts за всички exports; добави "types" в package.json

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { MempoolProvider } from "./bitcoin.js";
+import { MempoolProvider } from "./chain.js";
 import { verifyProof } from "./verify.js";
 import { toProofFile, writeProofFile } from "./prooffile.js";
 

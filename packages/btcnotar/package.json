@@ -5,13 +5,16 @@
   "type": "module",
   "main": "index.js",
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
   },
   "bin": {
     "btcnotar": "./bin/cli.js"
   },
   "files": [
     "index.js",
+    "client.js",
     "src",
     "bin",
     "README.md",
