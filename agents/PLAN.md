@@ -31,8 +31,8 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [ ] DEFAULT_SERVER_URL да стане https://api.btcnotar.com (първо настрой домейна в Railway!)
 
 ### Уеб приложение (examples/webapp)
-- [ ] Бутон "Download proof" на сайта: сваля <hash>.btcnotar.json във формата на prooffile.js
-- [ ] Страница "Verify proof file": качваш proof файл + документ, проверка в браузъра през mempool.space
+- [x] Бутон "Download proof" на сайта: сваля <hash>.btcnotar.json във формата на prooffile.js
+- [x] Страница "Verify proof file": качваш proof файл + документ, проверка в браузъра през mempool.space
 
 ### Спецификация и други езици
 - [x] SPEC.md: формат BTN1, Merkle правила, proof файл, API на сървъра

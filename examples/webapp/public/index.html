@@ -714,6 +714,26 @@
 
             <section class="card lib-gap">
                 <div class="hd">
+                    <h2 data-i18n="libVfTitle"></h2>
+                    <small data-i18n="libVfSub"></small>
+                </div>
+                <div class="bd">
+                    <label for="vfProof" data-i18n="libVfProof"></label>
+                    <input id="vfProof" type="file" accept=".json,application/json" />
+                    <label for="vfDoc" data-i18n="libVfDoc"></label>
+                    <input id="vfDoc" type="file" />
+                    <div class="row">
+                        <button class="primary" id="vfBtn" type="button" data-i18n="libVfBtn"></button>
+                    </div>
+                    <div id="vfBox" class="status" style="display:none">
+                        <span class="badge neutral" id="vfBadge"></span>
+                        <div id="vfMsg" class="lib-result"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card lib-gap">
+                <div class="hd">
                     <h2 data-i18n="libUseTitle"></h2>
                     <small>Node.js · npm</small>
                 </div>
@@ -968,6 +988,22 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Ideas: versions for Python, Rust, Go and .NET (NuGet). Want to help? → GitHub",
                 libSingleNote: "Need it right now, for one hash? Use a single transaction (paid with Lightning).",
                 libSingleBtn: "Single transaction →",
+                libDownload: "⬇ Download proof (.json)",
+                libDownloadHint: "Keep this file with your document. You can verify it later without this site.",
+                libVfTitle: "Verify a proof file",
+                libVfSub: "Checked in your browser against the Bitcoin blockchain — this server is not used",
+                libVfProof: "Proof file (.btcnotar.json)",
+                libVfDoc: "Document (optional — checks that the proof is for this file)",
+                libVfBtn: "Verify",
+                libVfNoFile: "Choose a proof file first.",
+                libVfBadFile: "This is not a btcnotar proof file.",
+                libVfDocMismatch: "The document does not match the proof. It was changed, or it is another file.",
+                libVfMerkle: "The proof is wrong (Merkle proof does not match).",
+                libVfNoTx: "Transaction not found on the blockchain.",
+                libVfChain: "The transaction does not contain this proof.",
+                libVfOk: "Valid. This document existed before this Bitcoin block.",
+                libVfOkMempool: "Valid, but the transaction is not in a block yet.",
+                libVfDocOk: "Document matches the proof.",
                 tabApp: "Single transaction ⚡",
                 singleNote: "Instant: one hash, one Bitcoin transaction, paid with Lightning. Free option: the “Library” tab.",
                 supportTitle: "Support the project ⚡",
@@ -1078,6 +1114,22 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Идеи: версии за Python, Rust, Go и .NET (NuGet). Искаш да помогнеш? → GitHub",
                 libSingleNote: "Трябва ти веднага, за един хеш? Използвай единична транзакция (плащане с Lightning).",
                 libSingleBtn: "Единична транзакция →",
+                libDownload: "⬇ Свали доказателството (.json)",
+                libDownloadHint: "Пази този файл с документа. Можеш да го провериш и без този сайт.",
+                libVfTitle: "Провери файл с доказателство",
+                libVfSub: "Проверка в браузъра директно в Bitcoin блокчейна — без този сървър",
+                libVfProof: "Файл с доказателство (.btcnotar.json)",
+                libVfDoc: "Документ (по желание — проверява, че доказателството е за този файл)",
+                libVfBtn: "Провери",
+                libVfNoFile: "Първо избери файл с доказателство.",
+                libVfBadFile: "Това не е файл с доказателство от btcnotar.",
+                libVfDocMismatch: "Документът не съвпада с доказателството. Променен е или е друг файл.",
+                libVfMerkle: "Доказателството е грешно (Merkle proof не съвпада).",
+                libVfNoTx: "Транзакцията не е намерена в блокчейна.",
+                libVfChain: "Транзакцията не съдържа това доказателство.",
+                libVfOk: "Валидно. Документът е съществувал преди този Bitcoin блок.",
+                libVfOkMempool: "Валидно, но транзакцията още не е в блок.",
+                libVfDocOk: "Документът съвпада с доказателството.",
                 tabApp: "Единична транзакция ⚡",
                 singleNote: "Веднага: един хеш, една Bitcoin транзакция, плащане с Lightning. Безплатно: таб „Библиотека“.",
                 supportTitle: "Подкрепи проекта ⚡",
@@ -1188,6 +1240,22 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 libMoreLangs: "Ideen: Versionen für Python, Rust, Go und .NET (NuGet). Willst du helfen? → GitHub",
                 libSingleNote: "Sofort und nur für einen Hash? Nutze eine Einzeltransaktion (Zahlung mit Lightning).",
                 libSingleBtn: "Einzeltransaktion →",
+                libDownload: "⬇ Nachweis herunterladen (.json)",
+                libDownloadHint: "Bewahre diese Datei mit dem Dokument auf. Du kannst sie später ohne diese Seite prüfen.",
+                libVfTitle: "Nachweisdatei prüfen",
+                libVfSub: "Geprüft in deinem Browser gegen die Bitcoin-Blockchain — dieser Server wird nicht genutzt",
+                libVfProof: "Nachweisdatei (.btcnotar.json)",
+                libVfDoc: "Dokument (optional — prüft, dass der Nachweis zu dieser Datei gehört)",
+                libVfBtn: "Prüfen",
+                libVfNoFile: "Wähle zuerst eine Nachweisdatei.",
+                libVfBadFile: "Das ist keine btcnotar-Nachweisdatei.",
+                libVfDocMismatch: "Das Dokument passt nicht zum Nachweis. Es wurde geändert oder ist eine andere Datei.",
+                libVfMerkle: "Der Nachweis ist falsch (Merkle-Proof passt nicht).",
+                libVfNoTx: "Transaktion nicht in der Blockchain gefunden.",
+                libVfChain: "Die Transaktion enthält diesen Nachweis nicht.",
+                libVfOk: "Gültig. Dieses Dokument existierte vor diesem Bitcoin-Block.",
+                libVfOkMempool: "Gültig, aber die Transaktion ist noch in keinem Block.",
+                libVfDocOk: "Dokument passt zum Nachweis.",
                 tabApp: "Einzeltransaktion ⚡",
                 singleNote: "Sofort: ein Hash, eine Bitcoin-Transaktion, Zahlung mit Lightning. Kostenlos: Tab „Bibliothek“.",
                 supportTitle: "Projekt unterstützen ⚡",
@@ -1301,7 +1369,18 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 msg.className = "lib-result";
                 for (const line of lines) {
                     const div = document.createElement("div");
-                    if (Array.isArray(line)) {
+                    if (line && line.download) {
+                        const a = document.createElement("a");
+                        a.textContent = line.label;
+                        a.href = line.download;
+                        a.download = line.name;
+                        a.className = "lib-btn";
+                        div.appendChild(a);
+                        const hint = document.createElement("div");
+                        hint.className = "smallhint";
+                        hint.textContent = t("libDownloadHint");
+                        div.appendChild(hint);
+                    } else if (Array.isArray(line)) {
                         const a = document.createElement("a");
                         a.textContent = line[0];
                         a.href = line[1];
@@ -1319,11 +1398,12 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 try { return new Date(iso).toLocaleString(currentLang); } catch { return iso; }
             }
 
-            function txLines(j) {
+            function txLines(j, hash) {
                 const out = [];
                 if (j.blockHeight) out.push(t("libBlock") + ": " + j.blockHeight);
                 if (j.date) out.push(t("libDate") + ": " + when(j.date));
                 if (j.txid) out.push(["mempool.space/tx/" + j.txid.slice(0, 12) + "…", "https://mempool.space/tx/" + j.txid]);
+                if (j.txid && hash) out.push({ download: "/api/notary/prooffile/" + hash, name: hash + ".btcnotar.json", label: t("libDownload") });
                 return out;
             }
 
@@ -1342,14 +1422,14 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                         const j = await r.json().catch(() => ({}));
                         if (r.status === 429) return show("bad", "429", [t("libRate")]);
                         if (!r.ok) return show("bad", "ERROR", [t("libError") + " " + (j.error || r.status)]);
-                        if (j.status === "anchored") return show("good", "✔", [t("libFound"), hashLine, ...txLines(j)]);
+                        if (j.status === "anchored") return show("good", "✔", [t("libFound"), hashLine, ...txLines(j, hash)]);
                         return show("neutral", "PENDING", [t("libPending") + " " + when(j.nextSettleAt), hashLine]);
                     }
                     const r = await fetch("/api/notary/verify/" + hash, { cache: "no-store" });
                     const j = await r.json().catch(() => ({}));
                     if (!r.ok) return show("bad", "ERROR", [t("libError") + " " + (j.error || r.status)]);
-                    if (j.valid && j.confirmed) return show("good", "✔", [t("libFound"), hashLine, ...txLines(j)]);
-                    if (j.valid) return show("neutral", "MEMPOOL", [t("libMempool"), hashLine, ...txLines(j)]);
+                    if (j.valid && j.confirmed) return show("good", "✔", [t("libFound"), hashLine, ...txLines(j, hash)]);
+                    if (j.valid) return show("neutral", "MEMPOOL", [t("libMempool"), hashLine, ...txLines(j, hash)]);
                     if (j.reason === "pending") return show("neutral", "PENDING", [t("libPending") + " " + when(j.nextSettleAt), hashLine]);
                     if (j.reason === "no-proof-found") return show("neutral", "?", [t("libUnknown"), hashLine]);
                     return show("bad", "✖", [t("libError") + " " + j.reason, hashLine]);
@@ -1368,6 +1448,129 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
                 setActiveTab("app");
                 window.scrollTo({ top: 0, behavior: "smooth" });
             });
+        })();
+
+        /* ================= verify a proof file (in the browser, no server) ================= */
+        (function () {
+            const box = document.getElementById("vfBox");
+            const badge = document.getElementById("vfBadge");
+            const msg = document.getElementById("vfMsg");
+            const btn = document.getElementById("vfBtn");
+
+            const hexToBytes = (h) => new Uint8Array(h.match(/../g).map((x) => parseInt(x, 16)));
+            const bytesToHex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+            const sha = async (bytes) => new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+            const join = (...parts) => {
+                const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+                let i = 0;
+                for (const p of parts) { out.set(p, i); i += p.length; }
+                return out;
+            };
+            const isHex64 = (s) => typeof s === "string" && /^[0-9a-f]{64}$/.test(s);
+
+            // Same rules as the library (spec/SPEC.md): leaf = sha256(0x00||h), node = sha256(0x01||l||r)
+            async function merkleOk(hash, proof, root) {
+                try {
+                    let x = await sha(join(new Uint8Array([0]), hexToBytes(hash)));
+                    for (const step of proof) {
+                        if (!isHex64(step.hash) || (step.position !== "left" && step.position !== "right")) return false;
+                        const sib = hexToBytes(step.hash);
+                        x = await sha(step.position === "left" ? join(new Uint8Array([1]), sib, x) : join(new Uint8Array([1]), x, sib));
+                    }
+                    return bytesToHex(x) === root;
+                } catch { return false; }
+            }
+
+            // Data pushes of an OP_RETURN script; returns the BTN1 root or null.
+            function btn1Root(scriptHex) {
+                if (!scriptHex || !scriptHex.startsWith("6a")) return null;
+                const b = hexToBytes(scriptHex);
+                let i = 1;
+                while (i < b.length) {
+                    const op = b[i++];
+                    let len = -1;
+                    if (op >= 1 && op <= 0x4b) len = op;
+                    else if (op === 0x4c) len = b[i++];
+                    else if (op === 0x4d) { len = b[i] | (b[i + 1] << 8); i += 2; }
+                    if (len < 0) continue;
+                    if (i + len > b.length) return null;
+                    const d = b.slice(i, i + len);
+                    i += len;
+                    if (len === 36 && d[0] === 0x42 && d[1] === 0x54 && d[2] === 0x4e && d[3] === 0x31) return bytesToHex(d.slice(4));
+                }
+                return null;
+            }
+
+            function apiBase(network) {
+                return network && network !== "mainnet" ? "https://mempool.space/" + network + "/api" : "https://mempool.space/api";
+            }
+            function txUrl(network, txid) {
+                return (network && network !== "mainnet" ? "https://mempool.space/" + network + "/tx/" : "https://mempool.space/tx/") + txid;
+            }
+
+            function show(kind, label, lines) {
+                box.style.display = "flex";
+                badge.className = "badge " + kind;
+                badge.textContent = label;
+                msg.textContent = "";
+                for (const line of lines) {
+                    const div = document.createElement("div");
+                    if (Array.isArray(line)) {
+                        const a = document.createElement("a");
+                        a.textContent = line[0];
+                        a.href = line[1];
+                        a.target = "_blank";
+                        a.rel = "noreferrer";
+                        div.appendChild(a);
+                    } else div.textContent = line;
+                    msg.appendChild(div);
+                }
+            }
+
+            async function run() {
+                const pf = document.getElementById("vfProof").files[0];
+                const doc = document.getElementById("vfDoc").files[0];
+                if (!pf) return show("neutral", "!", [t("libVfNoFile")]);
+                btn.disabled = true;
+                try {
+                    let p;
+                    try { p = JSON.parse(await pf.text()); } catch { p = null; }
+                    if (!p || p.format !== "btcnotar-proof" || p.version !== 1 || !isHex64(p.hash) || !isHex64(p.merkleRoot) || !isHex64(p.txid) || !Array.isArray(p.proof)) {
+                        return show("bad", "✖", [t("libVfBadFile")]);
+                    }
+                    const lines = ["SHA-256: " + p.hash];
+                    if (doc) {
+                        const docHash = bytesToHex(await sha(new Uint8Array(await doc.arrayBuffer())));
+                        if (docHash !== p.hash) return show("bad", "✖", [t("libVfDocMismatch"), "SHA-256 (proof): " + p.hash, "SHA-256 (" + doc.name + "): " + docHash]);
+                        lines.push(t("libVfDocOk"));
+                    }
+                    if (!(await merkleOk(p.hash, p.proof, p.merkleRoot))) return show("bad", "✖", [t("libVfMerkle"), ...lines]);
+
+                    const r = await fetch(apiBase(p.network) + "/tx/" + p.txid, { cache: "no-store" });
+                    if (r.status === 404) return show("bad", "✖", [t("libVfNoTx"), ...lines]);
+                    if (!r.ok) return show("bad", "ERROR", [t("libError") + " mempool.space " + r.status]);
+                    const tx = await r.json();
+                    const roots = (tx.vout || []).map((o) => btn1Root(o.scriptpubkey)).filter(Boolean);
+                    if (!roots.includes(p.merkleRoot)) return show("bad", "✖", [t("libVfChain"), ...lines]);
+
+                    const link = ["mempool.space/tx/" + p.txid.slice(0, 12) + "…", txUrl(p.network, p.txid)];
+                    if (!tx.status || !tx.status.confirmed) return show("neutral", "MEMPOOL", [t("libVfOkMempool"), ...lines, link]);
+                    const date = new Date(tx.status.block_time * 1000);
+                    return show("good", "✔", [
+                        t("libVfOk"),
+                        ...lines,
+                        t("libBlock") + ": " + tx.status.block_height,
+                        t("libDate") + ": " + date.toLocaleString(currentLang) + " (" + date.toISOString() + ")",
+                        link,
+                    ]);
+                } catch (e) {
+                    show("bad", "ERROR", [t("libError") + " " + (e.message || e)]);
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+
+            btn.addEventListener("click", run);
         })();
 
         /* ================= support (Lightning address) ================= */

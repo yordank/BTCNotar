@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import crypto from "node:crypto";
 import "dotenv/config";
-import { BTCNotar, FileStore } from "btcnotar";
+import { BTCNotar, FileStore, toProofFile } from "btcnotar";
 
 // Breez SDK Spark (CJS)
 import pkg from "@breeztech/breez-sdk-spark";
@@ -433,6 +433,33 @@ app.get("/api/notary/proof/:hash", async (req, res) => {
     }
 });
 
+
+// GET /api/notary/prooffile/:hash
+// Download the proof as a portable file (<hash>.btcnotar.json). With it the user
+// can verify later WITHOUT this server (only the Bitcoin blockchain).
+app.get("/api/notary/prooffile/:hash", async (req, res) => {
+    const n = requireNotary(res);
+    if (!n) return;
+    try {
+        const hash = String(req.params.hash || "").trim().toLowerCase();
+        if (!isValidHashHex(hash)) return res.status(400).json({ error: "hash must be 64 hex chars" });
+        const status = await n.getStatus(hash);
+        if (!status) return res.status(404).json({ error: "no proof found for that hash" });
+        if (status.status === "pending") return res.status(202).json(status);
+
+        // Block info from the chain (the stored copy may be empty right after broadcast).
+        let record = status;
+        const check = await n.verify(hash).catch(() => null);
+        if (check?.valid) record = { ...status, blockHeight: check.blockHeight, blockHash: check.blockHash, blockTime: check.blockTime };
+
+        const server = `${req.protocol}://${req.get("host")}`;
+        const file = toProofFile(record, { network: n.networkName || "mainnet", server });
+        res.setHeader("Content-Disposition", `attachment; filename="${hash}.btcnotar.json"`);
+        res.json(file);
+    } catch (e) {
+        res.status(500).json({ error: e?.message || String(e) });
+    }
+});
 
 // GET /api/notary/verify/:hash
 // Cryptographically re-derives the Merkle root from the hash + its proof,
