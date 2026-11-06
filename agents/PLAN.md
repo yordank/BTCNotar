@@ -35,8 +35,8 @@ Reviewer я маркира `- [x]`, когато я одобри.
 - [ ] Страница "Verify proof file": качваш proof файл + документ, проверка в браузъра през mempool.space
 
 ### Спецификация и други езици
-- [ ] SPEC.md: формат BTN1, Merkle правила, proof файл, API на сървъра
-- [ ] test-vectors.json: примерни hash-ове, root, proof-ове (за проверка на версиите на други езици) + тест, че JS ги минава
+- [x] SPEC.md: формат BTN1, Merkle правила, proof файл, API на сървъра
+- [x] test-vectors.json: примерни hash-ове, root, proof-ове (за проверка на версиите на други езици) + тест, че JS ги минава
 - [ ] Python версия (pip): client + verifyProofFile, минава test-vectors.json
 - [ ] Go, Rust, .NET (NuGet) версии — една задача за всеки език, след Python
 
