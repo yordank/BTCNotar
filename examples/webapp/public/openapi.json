@@ -1,0 +1,95 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BTC Notar",
+    "version": "0.2.0",
+    "description": "Free Bitcoin notarization. Send a SHA-256 hash; the server puts all queued hashes into one Bitcoin transaction (about every hour). Later get the proof and verify it on the blockchain. Same API as the npm library 'btcnotar' (BTCNotarClient)."
+  },
+  "servers": [{ "url": "https://proofofexistance-production.up.railway.app" }],
+  "paths": {
+    "/api/notary/hash": {
+      "post": {
+        "operationId": "submitHash",
+        "summary": "Add a SHA-256 hash to the queue (free). Compute the SHA-256 of the text or file first.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["hashHex"],
+                "properties": {
+                  "hashHex": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$", "description": "SHA-256 hash, 64 hex characters" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Queued (status pending, with nextSettleAt) or already anchored (status anchored, with proof)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Status" } } } },
+          "400": { "description": "Bad hash" },
+          "429": { "description": "Too many requests" }
+        }
+      }
+    },
+    "/api/notary/proof/{hash}": {
+      "get": {
+        "operationId": "getProof",
+        "summary": "Get the Merkle proof for a hash. 200 = anchored, 202 = still waiting in the queue, 404 = unknown.",
+        "parameters": [{ "name": "hash", "in": "path", "required": true, "schema": { "type": "string" }, "description": "SHA-256 hash, 64 hex characters" }],
+        "responses": {
+          "200": { "description": "Anchored", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Status" } } } },
+          "202": { "description": "Pending", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Status" } } } },
+          "404": { "description": "Unknown hash" }
+        }
+      }
+    },
+    "/api/notary/verify/{hash}": {
+      "get": {
+        "operationId": "verifyHash",
+        "summary": "Check a hash against the live Bitcoin blockchain: Merkle proof + OP_RETURN of the transaction.",
+        "parameters": [{ "name": "hash", "in": "path", "required": true, "schema": { "type": "string" }, "description": "SHA-256 hash, 64 hex characters" }],
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": { "type": "boolean" },
+                    "reason": { "type": "string", "description": "pending | no-proof-found | merkle-proof-mismatch | transaction-not-found | on-chain-data-mismatch" },
+                    "confirmed": { "type": "boolean" },
+                    "txid": { "type": "string" },
+                    "merkleRoot": { "type": "string" },
+                    "blockHeight": { "type": ["integer", "null"] },
+                    "date": { "type": ["string", "null"] },
+                    "nextSettleAt": { "type": ["string", "null"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Status": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["pending", "anchored"] },
+          "hash": { "type": "string" },
+          "addedAt": { "type": "string" },
+          "nextSettleAt": { "type": ["string", "null"] },
+          "merkleRoot": { "type": "string" },
+          "txid": { "type": "string" },
+          "proof": { "type": "array", "items": { "type": "object", "properties": { "position": { "type": "string", "enum": ["left", "right"] }, "hash": { "type": "string" } } } },
+          "blockHeight": { "type": ["integer", "null"] },
+          "pendingCount": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
