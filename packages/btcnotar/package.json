@@ -13,7 +13,11 @@
       "types": "./types/client.d.ts",
       "default": "./client.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./transactions": {
+      "types": "./types/transactions.d.ts",
+      "default": "./src/transactions/index.js"
+    }
   },
   "bin": {
     "btcnotar": "./bin/cli.js"
