@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>btcnotar · hash it, anchor it, prove it</title>
+<meta name="description" content="Free Bitcoin notarization. Send a SHA-256 hash, get a proof you verify yourself on the Bitcoin blockchain. npm, Python, CLI and MCP for AI agents." />
+<meta name="theme-color" content="#07080a" />
+<meta property="og:title" content="btcnotar · hash it, anchor it, prove it" />
+<meta property="og:description" content="Free proof of existence on Bitcoin. Only the hash leaves your machine. Verify without trusting anyone." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080a;
+    --bg2: #0c0e11;
+    --panel: #0e1013;
+    --line: #1f2329;
+    --line2: #2a2f37;
+    --text: #e9ecf1;
+    --muted: #8a93a3;
+    --dim: #4b5260;
+    --btc: #f7931a;
+    --btc2: #ffb347;
+    --btc-soft: rgba(247, 147, 26, .12);
+    --good: #4ade80;
+    --bad: #ff5c7a;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --display: "Space Grotesk", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--mono);
+    color: var(--text);
+    background:
+      radial-gradient(1000px 520px at 70% -10%, rgba(247,147,26,.13), transparent 60%),
+      radial-gradient(700px 400px at 10% 0%, rgba(247,147,26,.06), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before { /* faint grid like ctx-wire */
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { width: min(1180px, 100% - 40px); margin: 0 auto; position: relative; z-index: 1; }
+  code, pre { font-family: var(--mono); }
+
+  /* ---------- top bar ---------- */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(247,147,26,.45); background: var(--btc-soft); display: grid; place-items: center; color: var(--btc); font-size: 16px; }
+  .tag { font-size: 10px; letter-spacing: .12em; color: var(--btc); border: 1px solid rgba(247,147,26,.4); background: var(--btc-soft); padding: 2px 7px; border-radius: 999px; }
+  .top-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line2); background: rgba(14,16,19,.7); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .pill b { color: var(--text); font-weight: 500; }
+  .pill .sep { width: 1px; height: 14px; background: var(--line2); }
+  .live { color: var(--good); display: inline-flex; align-items: center; gap: 6px; }
+  .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 10px var(--good); animation: blink 2s infinite; }
+  .live.off { color: var(--dim); }
+  .live.off::before { background: var(--dim); box-shadow: none; animation: none; }
+  @keyframes blink { 50% { opacity: .35; } }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line2); background: rgba(14,16,19,.7); border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-family: var(--mono); color: var(--text); cursor: pointer; transition: border-color .15s, background .15s; }
+  .btn:hover { border-color: var(--btc); }
+  .btn.primary { border-color: rgba(247,147,26,.6); color: var(--btc); background: var(--btc-soft); }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; padding: 70px 0 40px; }
+  .kicker { color: var(--btc); font-size: 12px; letter-spacing: .22em; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .kicker::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--btc); }
+  h1 { font-family: var(--display); font-size: clamp(44px, 6.2vw, 74px); line-height: .98; letter-spacing: -.035em; margin: 18px 0 22px; }
+  h1 .acc { background: linear-gradient(90deg, var(--btc), var(--btc2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 560px; margin: 0; }
+  .lead b { color: var(--text); font-weight: 500; }
+  .hero-cta { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+  .hero-cta .btn { padding: 10px 18px; font-size: 13px; }
+
+  /* hero visual */
+  .viz { position: relative; }
+  .card { border: 1px solid var(--line2); background: linear-gradient(180deg, rgba(18,20,24,.92), rgba(12,14,17,.92)); border-radius: 14px; padding: 16px 18px; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 14px; }
+  .card-head .r { color: var(--btc); font-size: 12px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 5px; min-height: 92px; align-content: flex-start; }
+  .doc { width: 11px; height: 13px; border-radius: 2px; border: 1.5px solid #6fb7c9; opacity: 0; transform: translateY(-4px); transition: opacity .25s, transform .25s; }
+  .doc.on { opacity: .9; transform: none; }
+  .doc.fly { border-color: var(--btc); opacity: 0; transform: translateY(30px) scale(.4); transition: all .55s cubic-bezier(.6,0,.4,1); }
+  .connector { display: flex; flex-direction: column; align-items: center; height: 74px; justify-content: center; position: relative; }
+  .connector::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed var(--line2); }
+  .chip-core { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px; background: var(--btc); color: #1a1003; font-weight: 700; font-size: 14px; box-shadow: 0 0 0 4px rgba(247,147,26,.15), 0 0 34px rgba(247,147,26,.45); transition: transform .2s; }
+  .chip-core.pulse { transform: scale(1.06); }
+  .bottom-card { position: relative; }
+  .badge-float { position: absolute; top: -11px; right: 16px; background: var(--btc); color: #1a1003; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .tree { width: 100%; height: 110px; display: block; }
+  .tree line { stroke: var(--line2); stroke-width: 1; transition: stroke .3s; }
+  .tree circle { fill: var(--panel); stroke: var(--dim); stroke-width: 1.2; transition: all .3s; }
+  .tree .hot line, .tree line.hot { stroke: var(--btc); }
+  .tree circle.hot { fill: var(--btc); stroke: var(--btc); }
+  .tx-row { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 10px; gap: 10px; flex-wrap: wrap; }
+  .tx-row b { color: var(--text); font-weight: 500; }
+  .opr { font-size: 11px; color: var(--btc); word-break: break-all; margin-top: 8px; opacity: .85; min-height: 30px; }
+  .dots { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
+  .dots i { width: 5px; height: 5px; border-radius: 3px; background: var(--dim); transition: all .3s; cursor: pointer; }
+  .dots i.on { width: 20px; background: var(--btc); }
+
+  /* ---------- section headers ---------- */
+  section.block { padding: 34px 0; }
+  .sec-title { font-size: 12px; letter-spacing: .2em; color: var(--muted); margin: 0 0 14px; font-weight: 700; }
+  .sec-title span { color: var(--dim); }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .stat { background: var(--panel); padding: 20px 20px 18px; }
+  .stat .n { font-family: var(--display); font-size: 34px; font-weight: 700; letter-spacing: -.02em; }
+  .stat .n.btc { color: var(--btc); }
+  .stat .l { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .stat .s { color: var(--dim); font-size: 11px; margin-top: 6px; }
+  .recent { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
+  .recent-head { display: flex; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .recent-row { display: grid; grid-template-columns: 1.2fr 2fr .8fr 1fr; gap: 12px; padding: 10px 18px; font-size: 12.5px; border-bottom: 1px solid var(--line); align-items: center; }
+  .recent-row:last-child { border-bottom: 0; }
+  .recent-row .tx { color: var(--btc); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .recent-row .tx:hover { text-decoration: underline; }
+  .recent-row .m { color: var(--muted); }
+  .empty { padding: 16px 18px; color: var(--dim); font-size: 12.5px; }
+
+  /* ---------- wire it up ---------- */
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 5px; }
+  .tabs button { font-family: var(--mono); font-size: 12.5px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.on { color: var(--btc); border-color: rgba(247,147,26,.5); background: var(--btc-soft); }
+  .steps { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 16px; margin-top: 18px; }
+  .step-h { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; margin-bottom: 10px; min-height: 26px; }
+  .step-h .num { width: 22px; height: 22px; border-radius: 6px; background: var(--btc); color: #1a1003; display: grid; place-items: center; font-size: 12px; }
+  .step-h .note { margin-left: auto; font-weight: 400; color: var(--dim); font-size: 11px; }
+  .cmd { position: relative; border: 1px solid var(--line2); background: rgba(14,16,19,.9); border-radius: 12px; padding: 14px 44px 14px 16px; font-size: 12.5px; line-height: 1.6; min-height: 52px; white-space: pre-wrap; word-break: break-word; }
+  .cmd .p { color: var(--btc); user-select: none; }
+  .cmd .c { color: var(--dim); }
+  .cmd .k { color: #8fb8ff; }
+  .cmd .s { color: #a5e3b0; }
+  .copy { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line2); background: var(--panel); color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+  .copy:hover { color: var(--btc); border-color: var(--btc); }
+  .copy svg { width: 13px; height: 13px; }
+  .copy.ok { color: var(--good); border-color: var(--good); }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .checks span { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line2); border-radius: 999px; padding: 4px 11px; }
+  .checks span::before { content: "✓ "; color: var(--btc); }
+
+  /* ---------- try it ---------- */
+  .try { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .term { border: 1px solid var(--line2); background: var(--panel); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .term-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
+  .term-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line2); }
+  .term-bar span { margin-left: 8px; }
+  .term-body { padding: 16px; flex: 1; }
+  textarea { width: 100%; min-height: 96px; resize: vertical; background: var(--bg2); color: var(--text); border: 1px solid var(--line2); border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 13px; outline: none; }
+  textarea:focus { border-color: var(--btc); }
+  .drop { display: block; margin-top: 10px; border: 1px dashed var(--line2); border-radius: 10px; padding: 12px; font-size: 12px; color: var(--muted); text-align: center; cursor: pointer; transition: border-color .15s, color .15s; }
+  .drop:hover, .drop.over { border-color: var(--btc); color: var(--btc); }
+  .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .row .btn { padding: 9px 16px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .hashline { margin-top: 12px; font-size: 11px; color: var(--dim); word-break: break-all; min-height: 16px; }
+  .out { font-size: 12.5px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; color: var(--muted); }
+  .out .ok { color: var(--good); }
+  .out .warn { color: var(--btc); }
+  .out .err { color: var(--bad); }
+  .out a { color: var(--btc); text-decoration: underline; }
+  .cursor { display: inline-block; width: 7px; height: 14px; background: var(--btc); vertical-align: -2px; animation: blink 1s steps(2) infinite; }
+
+  /* ---------- how ---------- */
+  .how { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .how .card { padding: 18px; }
+  .how .i { color: var(--btc); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
+  .how h3 { font-family: var(--display); font-size: 19px; margin: 8px 0 8px; letter-spacing: -.01em; }
+  .how p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+
+  .paid { display: flex; justify-content: space-between; align-items: center; gap: 20px; border: 1px solid rgba(247,147,26,.35); background: linear-gradient(90deg, rgba(247,147,26,.10), rgba(247,147,26,.02)); border-radius: 14px; padding: 22px 24px; flex-wrap: wrap; }
+  .paid h3 { font-family: var(--display); margin: 0 0 4px; font-size: 21px; }
+  .paid p { margin: 0; color: var(--muted); font-size: 13px; }
+
+  footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 26px 0 40px; color: var(--dim); font-size: 12px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a { color: var(--muted); margin-right: 16px; }
+  footer a:hover { color: var(--btc); }
+  footer code { color: var(--btc); }
+
+  @media (max-width: 980px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .steps, .try { grid-template-columns: 1fr; }
+    .how { grid-template-columns: 1fr 1fr; }
+    .recent-row { grid-template-columns: 1fr 1fr; }
+    .recent-row .hide-sm { display: none; }
+  }
+  @media (max-width: 600px) {
+    .top-right .pill, .top-right .stars { display: none; }
+    .how { grid-template-columns: 1fr; }
+    .stat .n { font-size: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="/home.html">
+    <span class="mark">₿</span> btcnotar <span class="tag">FREE</span>
+  </a>
+  <div class="top-right">
+    <span class="pill">
+      <span class="live off" id="liveDot">live</span><span class="sep"></span>
+      <span>anchored <b id="pAnch">—</b></span>
+      <span>txs <b id="pTx">—</b></span>
+      <span>block <b id="pBlock">—</b></span>
+    </span>
+    <a class="btn stars" href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer">★ <span id="pStars">—</span></a>
+    <a class="btn" href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a class="btn primary" href="/index.html#lib">Open app →</a>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="wrap hero">
+    <div>
+      <div class="kicker">PROOF OF EXISTENCE ON BITCOIN</div>
+      <h1>Hash it.<br />Anchor it.<br /><span class="acc">Prove it.</span></h1>
+      <p class="lead">
+        One line of code puts the fingerprint of any text or file on the Bitcoin blockchain.
+        <b>Only the SHA-256 hash leaves your machine.</b> Every hour all hashes go into one
+        Merkle tree and one <b>OP_RETURN</b> transaction. You get a small proof file that
+        anyone can check against the chain — no account, no fees, no trust in us.
+      </p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#try">Try it now — free</a>
+        <a class="btn" href="#wire">Install →</a>
+      </div>
+    </div>
+
+    <div class="viz" aria-hidden="true">
+      <div class="card">
+        <div class="card-head"><span><span style="color:var(--btc)">$</span> <span id="vTitle">queue</span></span><span class="r" id="vCount">0 hashes</span></div>
+        <div class="grid" id="vGrid"></div>
+      </div>
+      <div class="connector"><span class="chip-core" id="vCore">₿ btcnotar</span></div>
+      <div class="card bottom-card">
+        <span class="badge-float" id="vBadge">1 tx</span>
+        <div class="card-head"><span>bitcoin block <b id="vBlock" style="color:var(--btc)">#—</b></span><span class="r" id="vSize">32 bytes on-chain</span></div>
+        <svg class="tree" id="vTree" viewBox="0 0 520 110" preserveAspectRatio="none"></svg>
+        <div class="opr" id="vRoot">OP_RETURN —</div>
+        <div class="tx-row"><span>proof per hash <b id="vProof">—</b></span><span>fee per hash <b id="vFee">—</b></span></div>
+      </div>
+      <div class="dots" id="vDots"></div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section class="wrap block" id="stats">
+    <h2 class="sec-title">LIVE NUMBERS <span>· <span id="sUpdated">loading…</span></span></h2>
+    <div class="stats">
+      <div class="stat"><div class="n btc" data-k="anchored">—</div><div class="l">hashes anchored on Bitcoin</div><div class="s" data-k="since"></div></div>
+      <div class="stat"><div class="n" data-k="txs">—</div><div class="l">Bitcoin transactions</div><div class="s" data-k="largest"></div></div>
+      <div class="stat"><div class="n" data-k="pending">—</div><div class="l">in the queue right now</div><div class="s" data-k="next"></div></div>
+      <div class="stat"><div class="n" data-k="submitted">—</div><div class="l">hashes submitted</div><div class="s" data-k="usageSince"></div></div>
+      <div class="stat"><div class="n" data-k="checks">—</div><div class="l">verifications</div><div class="s" data-k="downloads"></div></div>
+      <div class="stat"><div class="n" data-k="mcp">—</div><div class="l">AI agent calls (MCP)</div><div class="s">Claude · Cursor · VS Code · ChatGPT</div></div>
+      <div class="stat"><div class="n" data-k="npm">—</div><div class="l">npm downloads</div><div class="s" data-k="npmWeek"></div></div>
+      <div class="stat"><div class="n" data-k="pypi">—</div><div class="l">PyPI downloads / month</div><div class="s" data-k="paid"></div></div>
+    </div>
+    <div class="recent">
+      <div class="recent-head"><span>recent anchors</span><span>mempool.space ↗</span></div>
+      <div id="recentRows"><div class="empty">loading…</div></div>
+    </div>
+  </section>
+
+  <!-- ================= WIRE IT UP ================= -->
+  <section class="wrap block" id="wire">
+    <h2 class="sec-title">WIRE IT UP <span>· <span id="wCount"></span> WAYS</span></h2>
+    <div class="tabs" id="wTabs" role="tablist"></div>
+    <div class="steps" id="wSteps"></div>
+    <div class="checks">
+      <span>free public server</span>
+      <span>only the hash leaves your machine</span>
+      <span>verify without our server</span>
+      <span>Merkle batching · 1 tx / hour</span>
+      <span>portable .btcnotar.json proof</span>
+      <span>Python: zero dependencies</span>
+      <span>open spec + test vectors</span>
+      <span>MIT licensed</span>
+    </div>
+  </section>
+
+  <!-- ================= TRY ================= -->
+  <section class="wrap block" id="try">
+    <h2 class="sec-title">TRY IT <span>· FREE · ON BITCOIN IN ABOUT AN HOUR</span></h2>
+    <div class="try">
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i><span>input · hashed in your browser</span></div>
+        <div class="term-body">
+          <textarea id="tIn" placeholder="Type any text, paste a SHA-256, or drop a file below…" spellcheck="false"></textarea>
+          <label class="drop" id="tDrop">
+            <input type="file" id="tFile" hidden />
+            <span id="tDropTxt">⇣ drop a file here or click — it never leaves your computer</span>
+          </label>
+          <div class="row">
+            <button class="btn primary" id="tSend" type="button">Notarize (free)</button>
+            <button class="btn" id="tCheck" type="button">Check</button>
+          </div>
+          <div class="hashline" id="tHash"></div>
+        </div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i><span>btcnotar.com/api/notary</span></div>
+        <div class="term-body"><div class="out" id="tOut"><span class="c">$ waiting for input</span> <span class="cursor"></span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW ================= -->
+  <section class="wrap block" id="how">
+    <h2 class="sec-title">HOW IT WORKS</h2>
+    <div class="how">
+      <div class="card"><div class="i">01 · HASH</div><h3>Fingerprint locally</h3><p>Your text or file is hashed with SHA-256 on your side. The document itself is never uploaded.</p></div>
+      <div class="card"><div class="i">02 · BATCH</div><h3>Merkle tree</h3><p>All hashes from the last hour become leaves of one Merkle tree. Thousands of hashes, one root.</p></div>
+      <div class="card"><div class="i">03 · ANCHOR</div><h3>One OP_RETURN</h3><p>Only the 32-byte root goes into a single Bitcoin transaction. The server pays the fee.</p></div>
+      <div class="card"><div class="i">04 · PROVE</div><h3>Verify yourself</h3><p>Your proof re-builds the root and checks it against the real transaction and block. No trust in btcnotar needed.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap block">
+    <div class="paid">
+      <div>
+        <h3>Need it in the next block?</h3>
+        <p>Anchor a single hash right now in its own transaction — paid with Lightning.</p>
+      </div>
+      <a class="btn primary" href="/index.html#app" style="padding:10px 18px">Single transaction ⚡ →</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <a href="https://www.npmjs.com/package/btcnotar" target="_blank" rel="noreferrer">npm</a>
+      <a href="https://pypi.org/project/btcnotar/" target="_blank" rel="noreferrer">PyPI</a>
+      <a href="https://www.npmjs.com/package/btcnotar-mcp" target="_blank" rel="noreferrer">MCP</a>
+      <a href="https://github.com/yordank/BTCNotar/blob/main/spec/SPEC.md" target="_blank" rel="noreferrer">Spec</a>
+      <a href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="/index.html#about">About</a>
+    </div>
+    <div>⚡ support with sats: <code>trappedknight861@walletofsatoshi.com</code></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  // When opened from btcnotar.com (or Railway / localhost) use the same server, otherwise the public one.
+  const SAME = /(^|\.)btcnotar\.com$|railway\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
+  const API = SAME ? "" : "https://btcnotar.com";
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => (n == null || isNaN(n) ? "—" : Number(n).toLocaleString("en-US"));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function ago(iso) {
+    if (!iso) return "";
+    const s = Math.round((Date.now() - new Date(iso)) / 1000);
+    if (s < 60) return s + "s ago";
+    if (s < 3600) return Math.round(s / 60) + " min ago";
+    if (s < 86400) return Math.round(s / 3600) + " h ago";
+    return Math.round(s / 86400) + " days ago";
+  }
+  function until(iso) {
+    if (!iso) return "";
+    const s = Math.round((new Date(iso) - Date.now()) / 1000);
+    if (s <= 0) return "settling now";
+    const m = Math.floor(s / 60), sec = s % 60;
+    return "next tx in " + m + "m " + String(sec).padStart(2, "0") + "s";
+  }
+
+  /* ================= hero animation ================= */
+  // Scenes: how many hashes go into ONE transaction. Proof size = ceil(log2 n) × 32 bytes.
+  const SCENES = [1, 12, 250, 4000, 100000];
+  const grid = $("vGrid"), tree = $("vTree"), dots = $("vDots");
+  const MAX_DOCS = 160;
+  for (let i = 0; i < MAX_DOCS; i++) { const d = document.createElement("i"); d.className = "doc"; grid.appendChild(d); }
+  SCENES.forEach((_, i) => { const d = document.createElement("i"); d.onclick = () => { scene = i; runScene(); }; dots.appendChild(d); });
+
+  // static Merkle tree drawing: 16 leaves → root
+  (function drawTree() {
+    const levels = [16, 8, 4, 2, 1], W = 520, H = 110, ys = [100, 76, 52, 28, 8];
+    let svg = "", prev = null;
+    levels.forEach((n, li) => {
+      const pts = [];
+      for (let i = 0; i < n; i++) pts.push([(W / n) * (i + 0.5), ys[li]]);
+      if (prev) prev.forEach((p, i) => { const q = pts[Math.floor(i / 2)]; svg += `<line data-l="${li}" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`; });
+      prev = pts;
+      levels[li] = pts;
+    });
+    levels.forEach((pts, li) => pts.forEach((p) => { svg += `<circle data-l="${li}" cx="${p[0]}" cy="${p[1]}" r="${li === 4 ? 6 : 3.5}"/>`; }));
+    tree.innerHTML = svg;
+  })();
+
+  let scene = 0, sceneTimer = null, lastBlock = null;
+  const randHex = (n) => [...crypto.getRandomValues(new Uint8Array(n))].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  function runScene() {
+    clearTimeout(sceneTimer);
+    const n = SCENES[scene];
+    [...dots.children].forEach((d, i) => d.classList.toggle("on", i === scene));
+    const docs = [...grid.children];
+    const shown = Math.min(n, MAX_DOCS);
+    docs.forEach((d) => (d.className = "doc"));
+    tree.querySelectorAll(".hot").forEach((e) => e.classList.remove("hot"));
+    $("vRoot").textContent = "OP_RETURN …";
+    $("vTitle").textContent = n === 1 ? "submit" : "queue";
+    $("vCount").textContent = "0 hashes";
+    const depth = Math.ceil(Math.log2(Math.max(n, 1)));
+    $("vProof").textContent = depth === 0 ? "0 B (root = hash)" : depth * 32 + " B (" + depth + " steps)";
+    $("vFee").textContent = n === 1 ? "~1 tx fee" : "1/" + fmt(n) + " of a tx";
+    $("vBadge").textContent = fmt(n) + (n === 1 ? " hash" : " hashes") + " → 1 tx";
+    $("vBlock").textContent = lastBlock ? "#" + fmt(lastBlock + 1) : "#next";
+
+    // fill the queue
+    let k = 0;
+    const step = Math.max(1, Math.ceil(shown / 30));
+    const fill = () => {
+      for (let j = 0; j < step && k < shown; j++, k++) docs[k].classList.add("on");
+      $("vCount").textContent = fmt(Math.round((k / shown) * n)) + (n === 1 ? " hash" : " hashes");
+      if (k < shown) sceneTimer = setTimeout(fill, 40);
+      else sceneTimer = setTimeout(settle, 700);
+    };
+    const settle = () => {
+      $("vCore").classList.add("pulse");
+      docs.slice(0, shown).forEach((d, i) => setTimeout(() => (d.className = "doc fly"), i * (500 / shown)));
+      // light the tree bottom-up
+      [0, 1, 2, 3, 4].forEach((l) => setTimeout(() => tree.querySelectorAll(`[data-l="${l}"]`).forEach((e) => e.classList.add("hot")), 500 + l * 180));
+      setTimeout(() => {
+        $("vCore").classList.remove("pulse");
+        $("vRoot").textContent = "OP_RETURN " + randHex(32);
+      }, 1400);
+      sceneTimer = setTimeout(() => { scene = (scene + 1) % SCENES.length; runScene(); }, 4200);
+    };
+    fill();
+  }
+  runScene();
+
+  /* ================= live stats ================= */
+  const set = (k, v) => document.querySelectorAll(`[data-k="${k}"]`).forEach((e) => (e.textContent = v));
+  function countUp(k, target) {
+    const els = document.querySelectorAll(`[data-k="${k}"]`);
+    if (target == null) return els.forEach((e) => (e.textContent = "—"));
+    els.forEach((e) => {
+      const from = Number(e.dataset.v || 0);
+      e.dataset.v = target;
+      const t0 = performance.now(), dur = 900;
+      const tick = (t) => {
+        const p = Math.min(1, (t - t0) / dur), v = Math.round(from + (target - from) * (1 - Math.pow(1 - p, 3)));
+        e.textContent = fmt(v);
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  let nextSettleAt = null;
+  async function loadStats() {
+    try {
+      const r = await fetch(API + "/api/stats", { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const s = await r.json();
+      const c = s.chain || {}, u = s.usage || {}, npm = s.npm || {};
+      $("liveDot").classList.remove("off");
+      $("pAnch").textContent = fmt(c.anchoredHashes);
+      $("pTx").textContent = fmt(c.transactions);
+      $("pStars").textContent = fmt(s.github?.stars);
+
+      countUp("anchored", c.anchoredHashes);
+      countUp("txs", c.transactions);
+      countUp("pending", c.pendingHashes);
+      countUp("submitted", u.hashesSubmitted);
+      countUp("checks", u.checks);
+      countUp("mcp", u.mcpCalls);
+      const npmTotal = Object.values(npm).reduce((a, p) => a + (p.total || 0), 0);
+      const npmWeek = Object.values(npm).reduce((a, p) => a + (p.lastWeek || 0), 0);
+      countUp("npm", Object.values(npm).some((p) => p.total != null) ? npmTotal : null);
+      countUp("pypi", s.pypi?.lastMonth);
+
+      set("since", c.firstAnchorAt ? "since " + new Date(c.firstAnchorAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
+      set("largest", c.largestBatch ? "largest batch: " + fmt(c.largestBatch) + " hashes" : "");
+      set("usageSince", u.since ? "counted since " + new Date(u.since).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "");
+      set("downloads", fmt(u.proofDownloads) + " proof files downloaded");
+      set("npmWeek", fmt(npmWeek) + " last week · btcnotar + btcnotar-mcp");
+      set("paid", fmt(u.paidAnchors) + " paid instant anchors ⚡");
+      nextSettleAt = c.pendingHashes ? c.nextSettleAt : null;
+      set("next", nextSettleAt ? until(nextSettleAt) : "queue is empty");
+      $("sUpdated").textContent = "updated " + new Date(s.updatedAt || Date.now()).toLocaleTimeString("en-GB");
+
+      const rows = (c.recent || []).map((b) => `
+        <div class="recent-row">
+          <span class="m">${ago(b.createdAt)}</span>
+          <a class="tx" href="https://mempool.space/tx/${esc(b.txid)}" target="_blank" rel="noreferrer">${esc(b.txid)}</a>
+          <span>${fmt(b.hashes)} ${b.hashes === 1 ? "hash" : "hashes"}</span>
+          <span class="m hide-sm">${b.blockHeight ? "block " + fmt(b.blockHeight) : "<span style='color:var(--btc)'>in mempool</span>"}</span>
+        </div>`).join("");
+      $("recentRows").innerHTML = rows || '<div class="empty">no anchors yet — be the first ↓</div>';
+    } catch (e) {
+      $("liveDot").classList.add("off");
+      $("sUpdated").textContent = "stats offline";
+      $("recentRows").innerHTML = '<div class="empty">stats are not available right now</div>';
+    }
+  }
+  async function loadBlock() {
+    try {
+      const h = Number(await (await fetch("https://mempool.space/api/blocks/tip/height")).text());
+      if (h) { lastBlock = h; $("pBlock").textContent = fmt(h); }
+    } catch { /* offline */ }
+  }
+  loadStats(); loadBlock();
+  setInterval(loadStats, 60_000);
+  setInterval(loadBlock, 60_000);
+  setInterval(() => { if (nextSettleAt) set("next", until(nextSettleAt)); }, 1000);
+
+  /* ================= wire it up ================= */
+  const MCP_URL = "https://btcnotar.com/mcp";
+  const P = '<span class="p">$ </span>', C = (t) => `<span class="c">${t}</span>`;
+  const WAYS = [
+    { name: "Node.js", note: "npm",
+      steps: [
+        ["Install", P + "npm install btcnotar", "npm install btcnotar"],
+        ["Notarize", `<span class="k">const</span> c = <span class="k">new</span> BTCNotarClient();\n<span class="k">await</span> c.submit(sha256Hex(<span class="s">"hello"</span>));`, 'import { BTCNotarClient, sha256Hex } from "btcnotar";\nconst c = new BTCNotarClient();\nawait c.submit(sha256Hex("hello"));'],
+        ["Verify", `<span class="k">const</span> r = <span class="k">await</span> c.verify(hash);\n${C("// r.valid, r.blockHeight, r.date")}`, "const r = await c.verify(sha256Hex(\"hello\"));\nconsole.log(r.valid, r.blockHeight, r.date);"],
+      ] },
+    { name: "Python", note: "pip · no deps",
+      steps: [
+        ["Install", P + "pip install btcnotar", "pip install btcnotar"],
+        ["Notarize", `c = BTCNotarClient()\nc.submit(sha256_hex(<span class="s">"hello"</span>))`, 'from btcnotar import BTCNotarClient, sha256_hex\nc = BTCNotarClient()\nc.submit(sha256_hex("hello"))'],
+        ["Verify", `r = c.verify(sha256_hex(<span class="s">"hello"</span>))\n${C("# r['valid'], r['blockHeight']")}`, 'r = c.verify(sha256_hex("hello"))\nprint(r)'],
+      ] },
+    { name: "CLI", note: "no code",
+      steps: [
+        ["Install", P + "npm i -g btcnotar", "npm i -g btcnotar"],
+        ["Notarize", P + "btcnotar submit --file contract.pdf", "btcnotar submit --file contract.pdf"],
+        ["Verify", P + "btcnotar save --file contract.pdf\n" + P + "btcnotar verify-file &lt;hash&gt;.btcnotar.json", "btcnotar save --file contract.pdf"],
+      ] },
+    { name: "Claude", note: "connector",
+      steps: [
+        ["Add connector", C("Settings → Connectors → Add custom") + "\n" + MCP_URL, MCP_URL],
+        ["Ask", '"Notarize this text on Bitcoin: …"', "Notarize this text on Bitcoin: "],
+        ["Check later", '"Is it on the blockchain yet?\n Give me the proof file."', "Is it on the blockchain yet? Give me the proof file."],
+      ] },
+    { name: "Claude Code", note: "MCP",
+      steps: [
+        ["Add", P + "claude mcp add btcnotar -- npx -y btcnotar-mcp", "claude mcp add btcnotar -- npx -y btcnotar-mcp"],
+        ["Ask", '"Notarize ./dist/release.zip"', "Notarize ./dist/release.zip"],
+        ["Check later", '"Verify release.zip on Bitcoin"', "Verify release.zip on Bitcoin"],
+      ] },
+    { name: "Cursor", note: "~/.cursor/mcp.json",
+      steps: [
+        ["Add to mcp.json", `{ <span class="s">"mcpServers"</span>: { <span class="s">"btcnotar"</span>: {\n  <span class="s">"command"</span>: <span class="s">"npx"</span>,\n  <span class="s">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"btcnotar-mcp"</span>] } } }`, '{ "mcpServers": { "btcnotar": { "command": "npx", "args": ["-y", "btcnotar-mcp"] } } }'],
+        ["Ask", '"Notarize the file README.md"', "Notarize the file README.md"],
+        ["Check later", '"Is README.md anchored yet?"', "Is README.md anchored yet?"],
+      ] },
+    { name: "VS Code", note: ".vscode/mcp.json",
+      steps: [
+        ["Add to mcp.json", `{ <span class="s">"servers"</span>: { <span class="s">"btcnotar"</span>: {\n  <span class="s">"type"</span>: <span class="s">"stdio"</span>, <span class="s">"command"</span>: <span class="s">"npx"</span>,\n  <span class="s">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"btcnotar-mcp"</span>] } } }`, '{ "servers": { "btcnotar": { "type": "stdio", "command": "npx", "args": ["-y", "btcnotar-mcp"] } } }'],
+        ["Ask", '"Notarize this file on Bitcoin"', "Notarize this file on Bitcoin"],
+        ["Check later", '"Verify it on the blockchain"', "Verify it on the blockchain"],
+      ] },
+    { name: "ChatGPT", note: "connector",
+      steps: [
+        ["Add connector", C("Settings → Connectors → Create") + "\n" + MCP_URL, MCP_URL],
+        ["Ask", '"Notarize this text on Bitcoin: …"', "Notarize this text on Bitcoin: "],
+        ["Check later", '"Check if it is on Bitcoin"', "Check if it is on Bitcoin"],
+      ] },
+  ];
+  const COPY_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5"/></svg>';
+  $("wCount").textContent = WAYS.length;
+  const tabs = $("wTabs"), stepsEl = $("wSteps");
+  function showWay(i) {
+    [...tabs.children].forEach((b, j) => b.classList.toggle("on", i === j));
+    const w = WAYS[i];
+    stepsEl.innerHTML = w.steps.map((s, j) => `
+      <div>
+        <div class="step-h"><span class="num">${j + 1}</span>${s[0]}${j === 0 ? `<span class="note">${w.note}</span>` : ""}</div>
+        <div class="cmd">${s[1]}<button class="copy" type="button" title="Copy" data-copy="${esc(s[2])}">${COPY_SVG}</button></div>
+      </div>`).join("");
+  }
+  WAYS.forEach((w, i) => { const b = document.createElement("button"); b.type = "button"; b.textContent = w.name; b.onclick = () => showWay(i); tabs.appendChild(b); });
+  showWay(0);
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest(".copy");
+    if (!b) return;
+    try { await navigator.clipboard.writeText(b.dataset.copy); } catch { /* ignore */ }
+    b.classList.add("ok"); b.innerHTML = "✓";
+    setTimeout(() => { b.classList.remove("ok"); b.innerHTML = COPY_SVG; }, 1300);
+  });
+
+  /* ================= try it ================= */
+  const tIn = $("tIn"), tOut = $("tOut"), tHash = $("tHash"), tSend = $("tSend"), tCheck = $("tCheck");
+  let fileHash = null, fileName = null;
+  const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  async function currentHash() {
+    if (fileHash) return fileHash;
+    const v = tIn.value.trim();
+    if (!v) return null;
+    if (/^[0-9a-f]{64}$/i.test(v)) return v.toLowerCase();
+    return hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(tIn.value)));
+  }
+  tIn.addEventListener("input", async () => {
+    fileHash = null; fileName = null; $("tDropTxt").textContent = "⇣ drop a file here or click — it never leaves your computer";
+    const h = await currentHash(); tHash.textContent = h ? "sha256 " + h : "";
+  });
+  async function useFile(f) {
+    if (!f) return;
+    $("tDropTxt").textContent = "hashing " + f.name + "…";
+    fileHash = hex(await crypto.subtle.digest("SHA-256", await f.arrayBuffer()));
+    fileName = f.name; tIn.value = "";
+    $("tDropTxt").textContent = "📄 " + f.name + " (" + fmt(f.size) + " bytes) — hashed locally";
+    tHash.textContent = "sha256 " + fileHash;
+  }
+  $("tFile").addEventListener("change", (e) => useFile(e.target.files[0]));
+  const drop = $("tDrop");
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => useFile(e.dataTransfer.files[0]));
+
+  const line = (cls, t) => `<span class="${cls}">${t}</span>`;
+  function txInfo(j, hash) {
+    let s = "";
+    if (j.blockHeight) s += "\nblock     " + fmt(j.blockHeight);
+    if (j.date) s += "\ndate      " + new Date(j.date).toLocaleString("en-GB");
+    if (j.txid) s += `\ntx        <a href="https://mempool.space/tx/${esc(j.txid)}" target="_blank" rel="noreferrer">${esc(j.txid.slice(0, 16))}…</a>`;
+    if (j.txid) s += `\nproof     <a href="${API}/api/notary/prooffile/${hash}" download="${hash}.btcnotar.json">${hash.slice(0, 12)}….btcnotar.json ⇣</a>`;
+    return s;
+  }
+  async function run(kind) {
+    const hash = await currentHash();
+    if (!hash) { tOut.innerHTML = line("warn", "! type a text, paste a hash or drop a file first"); return; }
+    tSend.disabled = tCheck.disabled = true;
+    const head = line("c", "$ btcnotar " + (kind === "send" ? "submit" : "check") + " " + (fileName ? "--file " + esc(fileName) : hash.slice(0, 16) + "…")) + "\n";
+    tOut.innerHTML = head + line("c", "…") + ' <span class="cursor"></span>';
+    try {
+      if (kind === "send") {
+        const r = await fetch(API + "/api/notary/hash", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hashHex: hash }) });
+        const j = await r.json().catch(() => ({}));
+        if (r.status === 429) { tOut.innerHTML = head + line("err", "✖ too many requests — try again in a minute"); return; }
+        if (!r.ok) { tOut.innerHTML = head + line("err", "✖ " + esc(j.error || r.status)); return; }
+        if (j.status === "anchored" || j.txid) { tOut.innerHTML = head + line("ok", "✔ already on the Bitcoin blockchain") + txInfo(j, hash); return; }
+        tOut.innerHTML = head + line("warn", "● queued") + "\nnext tx   " + (j.nextSettleAt ? new Date(j.nextSettleAt).toLocaleString("en-GB") : "within the hour") +
+          (j.pendingCount ? "\nqueue     " + fmt(j.pendingCount) + " hashes" : "") + "\n\n" + line("c", "come back later and press Check");
+        loadStats();
+        return;
+      }
+      const r = await fetch(API + "/api/notary/verify/" + hash, { cache: "no-store" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { tOut.innerHTML = head + line("err", "✖ " + esc(j.error || r.status)); return; }
+      if (j.valid && j.confirmed) tOut.innerHTML = head + line("ok", "✔ on the Bitcoin blockchain — proof is valid") + txInfo(j, hash);
+      else if (j.valid) tOut.innerHTML = head + line("warn", "● transaction sent, waiting for a block (~10 min)") + txInfo(j, hash);
+      else if (j.reason === "pending") tOut.innerHTML = head + line("warn", "● in the queue") + "\nnext tx   " + new Date(j.nextSettleAt).toLocaleString("en-GB");
+      else if (j.reason === "no-proof-found" || j.reason === "unknown-hash") tOut.innerHTML = head + line("c", "? not submitted yet — press Notarize");
+      else tOut.innerHTML = head + line("err", "✖ " + esc(j.reason || "invalid"));
+    } catch (e) {
+      tOut.innerHTML = head + line("err", "✖ network error: " + esc(e.message || e));
+    } finally {
+      tSend.disabled = tCheck.disabled = false;
+    }
+  }
+  tSend.onclick = () => run("send");
+  tCheck.onclick = () => run("check");
+})();
+</script>
+</body>
+</html>

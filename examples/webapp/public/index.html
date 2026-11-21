@@ -2137,7 +2137,8 @@ npx btcnotar check  "Hello, Bitcoin!"</pre>
         });
 
         // Restore last tab
-        setActiveTab();
+        // Deep link from the landing page: /index.html#app, #lib, #about, #how
+        setActiveTab(location.hash.slice(1) || undefined);
 
 
         /* ================= mobile hamburger menu ================= */

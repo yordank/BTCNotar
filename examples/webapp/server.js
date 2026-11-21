@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import "dotenv/config";
 import { BTCNotar, FileStore, MempoolProvider, toProofFile } from "btcnotar";
 import { createRemoteServer } from "btcnotar-mcp";
+import { createStats } from "./stats.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 // Breez SDK Spark (CJS)
@@ -148,6 +149,11 @@ if (notary) {
 } else {
     console.warn("⚠️  OPRETURN_WIF_MAINNET not set — batch notarization endpoints are disabled");
 }
+
+// Public usage statistics for the landing page (/home.html)
+const stats = createStats({ dataDir: DATA_DIR, notary });
+app.use(stats.middleware);
+app.get("/api/stats", stats.handler);
 
 function requireNotary(res) {
     if (!notary) {
