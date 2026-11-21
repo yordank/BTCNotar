@@ -17,7 +17,7 @@ app.set("etag", false); // stop 304 cache on some browsers
 app.set("trust proxy", 1); // Railway is behind a proxy: req.ip = real client IP
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static("public", { index: "home.html" })); // "/" shows the landing page
 
 // Railway (and most hosts) give the port in PORT.
 const PORT = Number(process.env.PORT || 8787);
@@ -552,7 +552,7 @@ const mcpNotAllowed = (req, res) =>
 app.get("/mcp", mcpNotAllowed);
 app.delete("/mcp", mcpNotAllowed);
 
-app.get("/", (req, res) => res.redirect("/timestamp.html"));
+app.get("/", (req, res) => res.redirect("/home.html"));
 
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}, data in ${DATA_DIR || "./"}`);

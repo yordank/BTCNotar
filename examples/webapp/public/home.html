@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>btcnotar · hash it, anchor it, prove it</title>
+<title>BTC Notar — proves authorship and date using Bitcoin</title>
 <meta name="description" content="Free Bitcoin notarization. Send a SHA-256 hash, get a proof you verify yourself on the Bitcoin blockchain. npm, Python, CLI and MCP for AI agents." />
 <meta name="theme-color" content="#07080a" />
 <meta property="og:title" content="btcnotar · hash it, anchor it, prove it" />
@@ -138,7 +138,7 @@
   .steps { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 16px; margin-top: 18px; }
   .step-h { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; margin-bottom: 10px; min-height: 26px; }
   .step-h .num { width: 22px; height: 22px; border-radius: 6px; background: var(--btc); color: #1a1003; display: grid; place-items: center; font-size: 12px; }
-  .step-h .note { margin-left: auto; font-weight: 400; color: var(--dim); font-size: 11px; }
+  .step-h .snote { margin-left: auto; font-weight: 400; color: var(--dim); font-size: 11px; }
   .cmd { position: relative; border: 1px solid var(--line2); background: rgba(14,16,19,.9); border-radius: 12px; padding: 14px 44px 14px 16px; font-size: 12.5px; line-height: 1.6; min-height: 52px; white-space: pre-wrap; word-break: break-word; }
   .cmd .p { color: var(--btc); user-select: none; }
   .cmd .c { color: var(--dim); }
@@ -191,6 +191,36 @@
   footer a:hover { color: var(--btc); }
   footer code { color: var(--btc); }
 
+
+  /* ---------- about ---------- */
+  .about { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+  .about .card { padding: 22px; }
+  .about h3 { font-family: var(--display); font-size: 24px; margin: 6px 0 10px; letter-spacing: -.01em; }
+  .about p { color: var(--muted); font-size: 13px; line-height: 1.75; margin: 0 0 10px; }
+  .about p b { color: var(--text); font-weight: 500; }
+  .ticks { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; font-size: 13px; }
+  .ticks li::before { content: "✓  "; color: var(--btc); }
+  .who { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .who div { border: 1px solid var(--line2); border-radius: 10px; padding: 12px; font-size: 12.5px; color: var(--text); background: var(--bg2); }
+  .who div span { display: block; font-size: 18px; margin-bottom: 6px; }
+  .uses { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .uses span { font-size: 11.5px; color: var(--btc); border: 1px solid rgba(247,147,26,.35); background: var(--btc-soft); border-radius: 999px; padding: 4px 11px; }
+  .note { margin-top: 14px; font-size: 12px; color: var(--muted); border-left: 2px solid var(--btc); padding: 4px 0 4px 12px; }
+  .note b { color: var(--btc); }
+
+  /* ---------- verify + support ---------- */
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .duo .card { padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .duo h3 { font-family: var(--display); font-size: 21px; margin: 0; }
+  .duo p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0; }
+  .ln { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line2); background: var(--bg2); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--btc); word-break: break-all; }
+  .motto { text-align: center; padding: 40px 0 10px; }
+  .motto div { font-family: var(--display); font-size: clamp(26px, 3.6vw, 40px); font-weight: 700; letter-spacing: -.02em; }
+  .motto div span { color: var(--btc); }
+  .motto p { color: var(--dim); font-size: 12px; margin: 10px 0 0; }
+  footer .legal { width: 100%; color: var(--dim); font-size: 11px; margin-top: 6px; }
+  @media (max-width: 980px) { .about, .duo { grid-template-columns: 1fr; } }
+
   @media (max-width: 980px) {
     .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
@@ -210,7 +240,7 @@
 <body>
 
 <header class="wrap top">
-  <a class="brand" href="/home.html">
+  <a class="brand" href="/">
     <span class="mark">₿</span> btcnotar <span class="tag">FREE</span>
   </a>
   <div class="top-right">
@@ -283,6 +313,43 @@
     </div>
   </section>
 
+
+  <!-- ================= WHAT IS THIS ================= -->
+  <section class="wrap block" id="about">
+    <h2 class="sec-title">WHAT IS THIS? <span>· DIGITAL PROOF SECURED BY BITCOIN</span></h2>
+    <div class="about">
+      <div class="card">
+        <div class="i" style="color:var(--btc);font-size:12px;font-weight:700;letter-spacing:.1em">A DIGITAL NOTARY</div>
+        <h3>Proves authorship and date using Bitcoin</h3>
+        <p>BTC Notar proves that a <b>file, text or document existed at a specific moment in time</b>.</p>
+        <p>Your files are <b>never uploaded</b>. A unique fingerprint (SHA-256) is made on your side and recorded on the Bitcoin blockchain — the most secure network in the world.</p>
+        <ul class="ticks">
+          <li>Proves authorship and creation date</li>
+          <li>For documents, images, code, ideas and evidence</li>
+          <li>Verifiable anytime, without intermediaries</li>
+        </ul>
+        <div class="note"><b>NOTE</b> &nbsp;If your file changes even by 1 byte, the SHA-256 is different — so the proof is for this exact file.</div>
+      </div>
+      <div class="card">
+        <div class="i" style="color:var(--btc);font-size:12px;font-weight:700;letter-spacing:.1em">WHO IS THIS FOR?</div>
+        <h3>Real-world use cases</h3>
+        <div class="who">
+          <div><span>⚖️</span>Lawyers and people who need proof</div>
+          <div><span>💻</span>Developers, designers and creators</div>
+          <div><span>📷</span>Photographers and content authors</div>
+          <div><span>💡</span>Anyone who wants to protect an idea or document</div>
+        </div>
+        <div class="uses">
+          <span>document timestamping</span>
+          <span>intellectual property</span>
+          <span>legal proof of existence</span>
+          <span>source code &amp; releases</span>
+          <span>digital evidence</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= WIRE IT UP ================= -->
   <section class="wrap block" id="wire">
     <h2 class="sec-title">WIRE IT UP <span>· <span id="wCount"></span> WAYS</span></h2>
@@ -346,6 +413,32 @@
       <a class="btn primary" href="/index.html#app" style="padding:10px 18px">Single transaction ⚡ →</a>
     </div>
   </section>
+
+  <section class="wrap block">
+    <div class="duo">
+      <div class="card">
+        <div class="i" style="color:var(--btc);font-size:12px;font-weight:700;letter-spacing:.1em">KEEP IT · CHECK IT</div>
+        <h3>Verify a proof file</h3>
+        <p>After your hash is on Bitcoin, download the <b style="color:var(--text);font-weight:500">.btcnotar.json</b> proof and keep it with your document. You can check it later in your browser against the blockchain — even if this site is gone.</p>
+        <div><a class="btn" href="/index.html#lib" style="padding:9px 16px">Verify a proof file →</a></div>
+      </div>
+      <div class="card">
+        <div class="i" style="color:var(--btc);font-size:12px;font-weight:700;letter-spacing:.1em">SUPPORT THE PROJECT ⚡</div>
+        <h3>BTC Notar is free</h3>
+        <p>If you like it, send any amount of sats to this Lightning address:</p>
+        <div class="ln"><span style="flex:1">trappedknight861@walletofsatoshi.com</span><button class="copy" type="button" title="Copy" data-copy="trappedknight861@walletofsatoshi.com" style="position:static"></button></div>
+        <div class="row" style="margin-top:0">
+          <a class="btn primary" href="lightning:trappedknight861@walletofsatoshi.com" style="padding:9px 16px">Open in wallet ⚡</a>
+          <a class="btn" href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer" style="padding:9px 16px">Help on GitHub — Rust, Go, .NET next</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap motto">
+    <div>Don’t trust. <span>Prove.</span></div>
+    <p>Use Bitcoin — the most secure network.</p>
+  </section>
 </main>
 
 <footer>
@@ -356,9 +449,11 @@
       <a href="https://www.npmjs.com/package/btcnotar-mcp" target="_blank" rel="noreferrer">MCP</a>
       <a href="https://github.com/yordank/BTCNotar/blob/main/spec/SPEC.md" target="_blank" rel="noreferrer">Spec</a>
       <a href="https://github.com/yordank/BTCNotar" target="_blank" rel="noreferrer">GitHub</a>
-      <a href="/index.html#about">About</a>
+      <a href="#about">About</a>
+      <a href="/index.html#app">Single transaction</a>
     </div>
-    <div>⚡ support with sats: <code>trappedknight861@walletofsatoshi.com</code></div>
+    <div>⚡ <code>trappedknight861@walletofsatoshi.com</code></div>
+    <div class="legal">This application does not provide legal advice and does not replace legal or notarial services.</div>
   </div>
 </footer>
 
@@ -590,10 +685,11 @@
     const w = WAYS[i];
     stepsEl.innerHTML = w.steps.map((s, j) => `
       <div>
-        <div class="step-h"><span class="num">${j + 1}</span>${s[0]}${j === 0 ? `<span class="note">${w.note}</span>` : ""}</div>
+        <div class="step-h"><span class="num">${j + 1}</span>${s[0]}${j === 0 ? `<span class="snote">${w.note}</span>` : ""}</div>
         <div class="cmd">${s[1]}<button class="copy" type="button" title="Copy" data-copy="${esc(s[2])}">${COPY_SVG}</button></div>
       </div>`).join("");
   }
+  document.querySelectorAll(".copy:empty").forEach((b) => (b.innerHTML = COPY_SVG));
   WAYS.forEach((w, i) => { const b = document.createElement("button"); b.type = "button"; b.textContent = w.name; b.onclick = () => showWay(i); tabs.appendChild(b); });
   showWay(0);
   document.addEventListener("click", async (e) => {
