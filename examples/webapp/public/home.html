@@ -221,6 +221,20 @@
   footer .legal { width: 100%; color: var(--dim); font-size: 11px; margin-top: 6px; }
   @media (max-width: 980px) { .about, .duo { grid-template-columns: 1fr; } }
 
+  /* ---------- git use case ---------- */
+  .gituc { display: grid; grid-template-columns: 1fr 1.1fr; gap: 16px; }
+  .gituc .card { padding: 22px; }
+  .gituc h3 { font-family: var(--display); font-size: 24px; margin: 6px 0 10px; letter-spacing: -.01em; }
+  .gituc p { color: var(--muted); font-size: 13px; line-height: 1.75; margin: 0 0 10px; }
+  .gitlog { font-size: 12px; line-height: 2; }
+  .gitlog div { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; border-bottom: 1px solid var(--line); }
+  .gitlog div:last-child { border-bottom: 0; }
+  .gitlog .sha { color: var(--btc); }
+  .gitlog .msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gitlog .st { color: var(--good); }
+  .gitlog .st.q { color: var(--muted); }
+  @media (max-width: 980px) { .gituc { grid-template-columns: 1fr; } }
+
   @media (max-width: 980px) {
     .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
@@ -364,6 +378,7 @@
       <span>Python: zero dependencies</span>
       <span>open spec + test vectors</span>
       <span>MIT licensed</span>
+      <span>GitHub Action for every commit</span>
     </div>
   </section>
 
@@ -401,6 +416,41 @@
       <div class="card"><div class="i">02 · BATCH</div><h3>Merkle tree</h3><p>All hashes from the last hour become leaves of one Merkle tree. Thousands of hashes, one root.</p></div>
       <div class="card"><div class="i">03 · ANCHOR</div><h3>One OP_RETURN</h3><p>Only the 32-byte root goes into a single Bitcoin transaction. The server pays the fee.</p></div>
       <div class="card"><div class="i">04 · PROVE</div><h3>Verify yourself</h3><p>Your proof re-builds the root and checks it against the real transaction and block. No trust in btcnotar needed.</p></div>
+    </div>
+  </section>
+
+
+  <!-- ================= USE CASE: GIT COMMITS ================= -->
+  <section class="wrap block" id="git">
+    <h2 class="sec-title">USE CASE <span>· EVERY GIT COMMIT ON BITCOIN</span></h2>
+    <div class="gituc">
+      <div class="card">
+        <div class="i" style="color:var(--btc);font-size:12px;font-weight:700;letter-spacing:.1em">GITHUB ACTION · FREE</div>
+        <h3>Prove when your code was written</h3>
+        <p>A small GitHub Action sends the SHA-256 of every commit to btcnotar. Every hour the new commits go into one Bitcoin transaction. A proof file for each commit is saved on the <b style="color:var(--text);font-weight:500">btcnotar-proofs</b> branch.</p>
+        <p>The commit object contains the code tree, the parent commits, the author and the message. So one proof fixes the <b style="color:var(--text);font-weight:500">whole history</b> up to that commit — nobody can change it later without breaking the proof.</p>
+        <div class="cmd" style="margin-top:12px"><span class="c"># check any commit yourself — only the blockchain is needed</span>
+<span class="p">$ </span>git cat-file commit 517163d &gt; commit.bin
+<span class="p">$ </span>npx btcnotar verify-file 517163d….btcnotar.json --doc commit.bin<button class="copy" type="button" title="Copy" data-copy="git cat-file commit <sha> > commit.bin&#10;npx btcnotar verify-file <sha>.btcnotar.json --doc commit.bin"></button></div>
+        <div class="row">
+          <a class="btn primary" href="https://github.com/yordank/BTCNotar/tree/btcnotar-proofs" target="_blank" rel="noreferrer" style="padding:9px 16px">See BTCNotar's own commits →</a>
+          <a class="btn" href="#wire" onclick="document.querySelector('#wTabs button:last-child').click()" style="padding:9px 16px">Add it to your repo</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span><span style="color:var(--btc)">$</span> git log --btcnotar</span><span class="r" id="gitInfo">example</span></div>
+        <div class="gitlog" id="gitLog">
+          <div><span class="sha">517163d</span><span class="msg">Make home.html the main page</span><span class="st q">🕐 queue</span></div>
+          <div><span class="sha">2a58643</span><span class="msg">Add landing page with live stats</span><span class="st">✓ on Bitcoin</span></div>
+          <div><span class="sha">0ac49fd</span><span class="msg">CI: fix workflow YAML</span><span class="st">✓ on Bitcoin</span></div>
+          <div><span class="sha">feddd3c</span><span class="msg">Webapp: admin key for manual transactions</span><span class="st">✓ on Bitcoin</span></div>
+          <div><span class="sha">b9d7b04</span><span class="msg">Add tests for MerkleTree and stores</span><span class="st">✓ on Bitcoin</span></div>
+          <div><span class="sha">a4e9623</span><span class="msg">deploy</span><span class="st">✓ on Bitcoin</span></div>
+        </div>
+        <div class="checks" style="margin-top:14px">
+          <span>open-source releases</span><span>prior art for ideas</span><span>audit trail</span><span>tamper-evident history</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -676,6 +726,12 @@
         ["Ask", '"Notarize this text on Bitcoin: …"', "Notarize this text on Bitcoin: "],
         ["Check later", '"Check if it is on Bitcoin"', "Check if it is on Bitcoin"],
       ] },
+    { name: "GitHub Action", note: "every commit",
+      steps: [
+        ["Add the script", P + "mkdir -p scripts && curl -o scripts/notarize-commits.mjs \\\n  https://raw.githubusercontent.com/yordank/BTCNotar/main/scripts/notarize-commits.mjs", "mkdir -p scripts && curl -o scripts/notarize-commits.mjs https://raw.githubusercontent.com/yordank/BTCNotar/main/scripts/notarize-commits.mjs"],
+        ["Add the workflow", P + "mkdir -p .github/workflows && curl -o .github/workflows/notarize-commits.yml \\\n  https://raw.githubusercontent.com/yordank/BTCNotar/main/.github/workflows/notarize-commits.yml", "mkdir -p .github/workflows && curl -o .github/workflows/notarize-commits.yml https://raw.githubusercontent.com/yordank/BTCNotar/main/.github/workflows/notarize-commits.yml"],
+        ["Push", P + "git add . && git commit -m \"notarize commits\" && git push\n" + C("# proofs appear on branch btcnotar-proofs"), "git add . && git commit -m \"notarize commits on Bitcoin\" && git push"],
+      ] },
   ];
   const COPY_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5"/></svg>';
   $("wCount").textContent = WAYS.length;
@@ -699,6 +755,24 @@
     b.classList.add("ok"); b.innerHTML = "✓";
     setTimeout(() => { b.classList.remove("ok"); b.innerHTML = COPY_SVG; }, 1300);
   });
+
+
+  /* ================= live git log from the btcnotar-proofs branch ================= */
+  (async () => {
+    try {
+      const r = await fetch("https://raw.githubusercontent.com/yordank/BTCNotar/btcnotar-proofs/commits.json", { cache: "no-store" });
+      if (!r.ok) return;
+      const list = Object.entries((await r.json()).commits || {}).sort((a, b) => String(b[1].date).localeCompare(String(a[1].date)));
+      if (!list.length) return;
+      const onChain = list.filter(([, e]) => e.confirmed).length;
+      $("gitInfo").textContent = onChain + " / " + list.length + " commits on Bitcoin";
+      $("gitLog").innerHTML = list.slice(0, 6).map(([sha, e]) => {
+        const st = e.confirmed ? `<a class="st" href="https://mempool.space/tx/${esc(e.txid)}" target="_blank" rel="noreferrer">✓ block ${fmt(e.blockHeight)}</a>`
+          : e.status === "anchored" ? '<span class="st q">⏳ mempool</span>' : '<span class="st q">🕐 queue</span>';
+        return `<div><a class="sha" href="https://github.com/yordank/BTCNotar/commit/${esc(sha)}" target="_blank" rel="noreferrer">${esc(sha.slice(0, 7))}</a><span class="msg">${esc(e.subject || "")}</span>${st}</div>`;
+      }).join("");
+    } catch { /* keep the example */ }
+  })();
 
   /* ================= try it ================= */
   const tIn = $("tIn"), tOut = $("tOut"), tHash = $("tHash"), tSend = $("tSend"), tCheck = $("tCheck");

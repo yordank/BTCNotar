@@ -1,0 +1,61 @@
+# Notarize every commit of this repository on Bitcoin (free, with btcnotar).
+#
+# - on push:      the new commits are sent to the btcnotar queue
+# - every hour:   waiting commits are checked; proof files are saved when they are in a block
+# - manual run:   sends ALL commits of the history (first time)
+#
+# The results are on the branch `btcnotar-proofs` (README.md with a table + one
+# .btcnotar.json proof file per commit). Nothing is written to main.
+
+name: notarize commits
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notarize-commits
+  cancel-in-progress: false
+
+jobs:
+  notarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Open the proofs branch
+        run: |
+          git config user.name  "btcnotar-bot"
+          git config user.email "btcnotar-bot@users.noreply.github.com"
+          if git fetch origin btcnotar-proofs; then
+            git worktree add proofs origin/btcnotar-proofs
+            git -C proofs checkout -B btcnotar-proofs
+          else
+            git worktree add --orphan -b btcnotar-proofs proofs
+          fi
+
+      - name: Notarize commits
+        run: node scripts/notarize-commits.mjs --out proofs
+
+      - name: Save proofs
+        run: |
+          cd proofs
+          git add -A
+          if git diff --cached --quiet; then
+            echo "nothing changed"
+          else
+            git commit -q -m "btcnotar: update commit proofs"
+            git push origin btcnotar-proofs
+          fi

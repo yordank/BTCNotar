@@ -28,6 +28,18 @@
 
 <hr/>
 
+<h2>🔗 Use case: every git commit on Bitcoin</h2>
+
+<p>This repository notarizes <strong>its own commits</strong>. The GitHub Action <code>.github/workflows/notarize-commits.yml</code> runs <code>scripts/notarize-commits.mjs</code>: for each commit it sends <code>sha256(git cat-file commit &lt;sha&gt;)</code> to the free server, and every hour it saves the proof files on the branch <a href="https://github.com/yordank/BTCNotar/tree/btcnotar-proofs"><code>btcnotar-proofs</code></a>.</p>
+
+<pre><code># check a commit yourself (only the blockchain is needed)
+git cat-file commit &lt;sha&gt; &gt; commit.bin
+npx btcnotar verify-file &lt;sha&gt;.btcnotar.json --doc commit.bin</code></pre>
+
+<p>To use it in your repo: copy the script and the workflow file, push, then run the workflow once by hand (Actions → notarize commits → Run workflow) to send the whole history.</p>
+
+<hr/>
+
 <h2>🧠 Overview</h2>
 
 <p>
