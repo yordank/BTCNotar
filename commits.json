@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "hashRule": "sha256(git cat-file commit <sha>)",
+  "server": "https://btcnotar.com",
+  "commits": {}
+}
