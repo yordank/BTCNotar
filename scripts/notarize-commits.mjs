@@ -35,7 +35,7 @@ const opt = (name, def) => {
     const i = args.indexOf(name);
     return i >= 0 && args[i + 1] ? args[i + 1] : def;
 };
-const SERVER = opt("--server", process.env.BTCNOTAR_SERVER || "https://btcnotar.com").replace(/\/+$/, "");
+const SERVER = opt("--server", process.env.BTCNOTAR_SERVER || "https://proofofexistance-production.up.railway.app").replace(/\/+$/, "");
 const OUT = path.resolve(opt("--out", "btcnotar-proofs"));
 const RANGE = opt("--range", "");
 const MAX = Number(opt("--max", 500));
