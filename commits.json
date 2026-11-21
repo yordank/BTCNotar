@@ -2,5 +2,461 @@
   "version": 1,
   "hashRule": "sha256(git cat-file commit <sha>)",
   "server": "https://btcnotar.com",
-  "commits": {}
+  "commits": {
+    "050315717e20232c2c27be4d07c2a039642c87d4": {
+      "hash": "5f01ef336964edd67942f9ed23d2a87cfd2e4c97c3bffd8c4a7bcb416912bdc1",
+      "subject": "Initial commit",
+      "date": "2026-04-19T06:54:10+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "76daf061793d8a38ab299971bc8be16169f8ed99": {
+      "hash": "570603788f479fab3c723cd189822ccfec65e0655bc514fb7795c32cf8d925b1",
+      "subject": "Initial commit",
+      "date": "2026-04-19T07:18:37+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "938ecf7cda876c7d3ba35027e6d5ebb4d382920e": {
+      "hash": "6e6a2682ad06a5bad0d17e81971bd03cfe7d22b764d5a730001c9f3ce445fcf6",
+      "subject": "Create README.md",
+      "date": "2026-04-19T07:25:05+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "e03d4c2e8fe6bab4c1200f70538ca5d208dcbc0a": {
+      "hash": "9dc324762467803532a99839e2620497a1295a2d407a774de1370515231c20e5",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:26:56+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "58144dd1f2e06ef0e54145aefadcbef60b0797c4": {
+      "hash": "a1008fc2febb471042193c94b25aff3a4ce633c5d651350736c5a99957c66366",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:31:47+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "32dadaad65e400fe524260d01374c925cdc5ae3a": {
+      "hash": "40346f1718232a272dd0473f334fe600b6dfe6c4646bf881a9f94021b4f8d343",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:35:42+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "65ec10badc7fb58b5582cc11557e96a2652897fc": {
+      "hash": "37502e5aaa612a6a0f6f549a64cf147b4e6a0e08147114360b348f5446d006c5",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:36:39+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "37cf63c16fb31744e983245c327b30cb48c96a20": {
+      "hash": "7a09ab3a543a68152670466c39fc026ce165bfc9e2f2655b14c7b5064e53a3c2",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:38:16+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "e12077a45d03eb9c449d77f9abfe1130b935eeaf": {
+      "hash": "1a47013d80b6eac3133ab69495c47bc7c3d3c1045b216585bfd7a4c7fcd6fdbf",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:40:02+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "fc22f6200b376d9ec724bd3b5527c8ebbd4bebb8": {
+      "hash": "6e6b828de6c8bc4f0dd905b4cadd540493bff31ddf466cda950de3a6669200e7",
+      "subject": "Update README.md",
+      "date": "2026-04-19T07:40:28+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "22892900a3dadd90d8c06681f51be6a65dc58564": {
+      "hash": "1604d7832b95c7deabefb0059481f281b3a96f746d99af91debb5c1f3c470406",
+      "subject": "Add files via upload",
+      "date": "2026-04-19T07:42:36+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "f8998ba47fb56e51dfef7e075a5d91f1cc10728c": {
+      "hash": "e55aa4fbf75ada5ec0f8c849b642d7cb97dac97b9a898308a173becfdf80b9fd",
+      "subject": "new logo added",
+      "date": "2026-04-19T07:44:47+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "a2b6b93b9b756098585cacf5074a35c6de80ced0": {
+      "hash": "8148f19339fe1933398ca11ead168ff3750ecfdb934fe458f8e2456082893790",
+      "subject": "Merge branch 'main' of https://github.com/yordank/TrustedHash",
+      "date": "2026-04-19T07:45:01+01:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "b9bdde7ad1ef1e940c3f6ef76cf4fe362717b5f9": {
+      "hash": "7a5ee22ace213650110fe32d4bed75ae8e093a0daae6e6003f642a768a05e5c6",
+      "subject": "Restructure into an installable npm library with Merkle-batch anchoring",
+      "date": "2026-09-11T15:06:08Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "7a1dd648ac57e6e93af4cb3095ff8009bbf6384e": {
+      "hash": "6bf3bb8b9c381c95e3578fe74b12342b2190abff56d38ed00e41044ad81be3c4",
+      "subject": "Merge pull request #1 from yordank/claude/clever-pascal-t118xq",
+      "date": "2026-09-11T18:14:41+03:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "f3499a352e93d1fc2258f3397a11b9dc7aa36308": {
+      "hash": "7474d870b0e198924ecf79964cd678759a7167d183f2ad60f844932a2494916a",
+      "subject": "Add developer + reviewer agents with shared plan and work log",
+      "date": "2026-10-25T11:14:26Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "0cb973e47b5cab906cc1aa32dfe0896005f34ba0": {
+      "hash": "cc7df9209151f80b6ba32b7f8d569cdd819a7a8bff04ad683be58149d0d5f422",
+      "subject": "Merge pull request #2 from yordank/claude/dev-review-agents",
+      "date": "2026-10-25T13:20:28+02:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "a4e962373ed60d8271c59cadd95d0a97160eaae8": {
+      "hash": "1913f944c23882328bb64d7362e647dd3c23bda9aa626129430741b1ee7a1710",
+      "subject": "deploy",
+      "date": "2026-10-25T11:22:33Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "b9d7b0484960f300c37a17e8d240122a41b03357": {
+      "hash": "328a3e55358ed2f3b18b661873983784df68cc595cf78727f098bd03e6555c58",
+      "subject": "Add tests for MerkleTree and stores",
+      "date": "2026-10-25T11:48:14Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "feddd3ce78e09a0838c305b49afd447929e845ee": {
+      "hash": "c14a54f6db3be1e64995dac3ec33fe7ed890ef2074d72d3094bec937fb24a9ae",
+      "subject": "Webapp: admin key for manual transactions, require paid invoice for /api/opreturn",
+      "date": "2026-10-25T12:19:02Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "437b475cca68edba5bc75f62c8d738289f3d20d5": {
+      "hash": "ee47cdba176b4727e4a1a98eb5671db221892810c6152e3b06625a8d0803375b",
+      "subject": "Merge pull request #4 from yordank/claude/admin-key",
+      "date": "2026-10-25T14:20:50+02:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "ff38a9bff30767ea5a45ef960f3b477c19b53993": {
+      "hash": "c535e5f67191a34825fedb08ad9b8190ee2ec509ed116aa4b54dbbb82007131e",
+      "subject": "deploy",
+      "date": "2026-10-25T12:21:33Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "8b35594a850685a120b85e81dabbdefb709392e2": {
+      "hash": "f62e7b0f7746c21ec5ab7eb54fa10440bf196e16c788fac37d47538d0e380cc2",
+      "subject": "Settle when the oldest pending hash is intervalMs old; webapp every 60 min",
+      "date": "2026-10-25T12:33:10Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "d85e58d460084182a8bf430ced1c4b59a528e3a1": {
+      "hash": "31653d210a79797f4eba696d188605af862bf08ed39fb0d8960ecdc4c06a3911",
+      "subject": "Merge pull request #5 from yordank/claude/hourly-settle",
+      "date": "2026-10-25T14:34:18+02:00",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "65de08758e3dc9a597e25f212ca1a85e6c85c0e3": {
+      "hash": "577496ca7e0a575a384e9949febc82e5f5c26e7184c00bfb4b4ba0b90c2a47dd",
+      "subject": "Webapp: instant anchor through the btcnotar library; Railway support",
+      "date": "2026-10-25T12:37:50Z",
+      "status": "unknown",
+      "nextSettleAt": "2026-11-21T16:56:11.925Z"
+    },
+    "d8f5a3c93094ba4b3c92ee84a421941618e96d55": {
+      "hash": "c9a987f00173ea66b24806f52d1149ba465506fae4996bc5e9c5a2ba118f26eb",
+      "subject": "Merge pull request #6 from yordank/claude/railway-library",
+      "date": "2026-10-25T14:40:25+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "bedefa0a04f3e74ee64a12085965a14cd0127f20": {
+      "hash": "e500f79f3cbe82bbf6f6ac295486d9e7d5bcf0d2ee28d8db3ae0bcab87ef9c4c",
+      "subject": "Free public queue: BTCNotarClient (no key needed), pending status, rate limit",
+      "date": "2026-10-25T13:13:33Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "88eba8a46b31487cb6f3d2b67efcaacfa95c2021": {
+      "hash": "fc07e597834546937050615fbf23462e4f9906f92e11a2604843301a91a96146",
+      "subject": "Client and CLI use the public Railway server by default",
+      "date": "2026-10-25T13:20:05Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "aad077e544c9d61dd7a4f504bed272c8d08d9c4d": {
+      "hash": "88de2b00b8943b9aea82449c098c0ab51e3c08c65f89b010fe25a8a6158e2f1b",
+      "subject": "Merge pull request #7 from yordank/claude/public-client",
+      "date": "2026-10-25T15:20:25+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "07764db53ee9b7d95538f468d8b208343f6418ed": {
+      "hash": "8da0d328b379f84be54e55d627ac650377b0e99296ca974122005357950a6966",
+      "subject": "Add railway.json: start the web app with npm start from the repo root",
+      "date": "2026-10-25T13:31:51Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "ff491f9acf53299c1a7e03fa0ae5a9efa2d9781f": {
+      "hash": "d59f8812835333fa63562ffe422174b773201dc645b6c6e3597bab3ffe03bf6e",
+      "subject": "Merge pull request #8 from yordank/claude/railway-config",
+      "date": "2026-10-25T15:32:27+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "a5dde03f2ab044dc758ac39df1df640beddc3c7e": {
+      "hash": "8d82b271bf7f8a65a6cbe327a1698b8f0cb0829d2494464d3199e0abbbffe3dd",
+      "subject": "npm README: easy copy-paste examples first; 0.2.1",
+      "date": "2026-10-25T16:49:28Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "4881411f6abad09ff2a106dd970849ae78e8f4b1": {
+      "hash": "ec78c51e360443b6710a9771cfc3d21ed51ed89567ccc466a51ffce8982d63fe",
+      "subject": "Merge pull request #10 from yordank/claude/npm-readme",
+      "date": "2026-10-25T18:50:08+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "347bb6ec46af237015d4568c542de91c129615b2": {
+      "hash": "8b8fe131751900d9413379de14e2006ffe8b9a8dfc9ef1eed656b59589252dbb",
+      "subject": "Add Lightning donation address to the site and READMEs; 0.2.2",
+      "date": "2026-10-25T18:47:22Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "d092d7b95cf65df51f2a9f6046cabc236e0f78f0": {
+      "hash": "d40676a52f4b68643103306f4006b9fc059be5efa3a9f233f300ccff78a8c722",
+      "subject": "Merge pull request #11 from yordank/claude/donate",
+      "date": "2026-10-25T20:49:34+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "840aff2654619dec42587a0b686c77117e7155e9": {
+      "hash": "e8a3439e334190e515915b4687b4903d459a0e4c716a54419d9f881f23b0dacc",
+      "subject": "Site: library tab first (free), paid single transaction in its own tab",
+      "date": "2026-10-28T05:48:53Z",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "0f02a8afa23fb98e73d20a7356e58c6379faf3db": {
+      "hash": "c22b733f6a9637d49d7468547017b5ff8e10f54bfb4ee7d53ced0b4d2d96663d",
+      "subject": "Merge pull request #12 from yordank/claude/library-home",
+      "date": "2026-10-28T07:49:32+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "9f2a18427b916e1f8dc508dff60779e1a6407ec9": {
+      "hash": "9e60ef0b6356ec00077925c1394369b3eb46b2da5889fc81fce10a91df705153",
+      "subject": "Portable proof files: waitForProof, saveProof, verifyProofFile",
+      "date": "2026-11-05T22:46:49+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "ea882e9998a4cd697d714cd6090adceb3aa6355f": {
+      "hash": "5d210bebed639777ac75e728b46ea79523d986fad826718cb60af4df41d9e3f3",
+      "subject": "Add next tasks to agents/PLAN.md",
+      "date": "2026-11-06T13:34:04+02:00",
+      "submittedAt": "2026-11-21T15:57:13.397Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "08077096c34a067b62fc1f51a598b62cbc4a8098": {
+      "hash": "ade7ec1198d7d6865d09b19b4be6d16acdfa3ed187a57ce05ee94db88471524d",
+      "subject": "Fix hash case in store, check 64-hex hashes, don't re-queue anchored hashes",
+      "date": "2026-11-06T13:47:53+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "4be9ce4b14bf973ace887ea2af889d7b41b172f1": {
+      "hash": "981d1f286d97c866a9352f09913514191614b89bf37b50e95da83c2cfa0b80bc",
+      "subject": "Safer settle: save signed batch before broadcast, retry/undo, pick a UTXO that pays the fee, atomic FileStore, RBF",
+      "date": "2026-11-06T13:49:19+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "e0ae9ed8988a4bb0b3eea8934fed30a7dc35c674": {
+      "hash": "eeba35d43ff14dafbc6804ea74fd81c8c40fec24cdefecdb1b70b36459efd665",
+      "subject": "Use built-in fetch instead of axios; drop dotenv from the library",
+      "date": "2026-11-06T13:50:20+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "7211f26083dfe095147ee2e673d366d4878a4cee": {
+      "hash": "22fd42701d314f3e4bc1397ca48ab02f0836ccb922aeb7c2600eb2142ac31709",
+      "subject": "Light entry btcnotar/client without bitcoinjs-lib (own OP_RETURN script parser)",
+      "date": "2026-11-06T13:51:20+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "25d143f33caf86cf501bc2f3356ffd96c414cf2d": {
+      "hash": "adafb665d92e7e4c7d4563c60c763dbe9cb1d1efb775f0ccd1f992df5536e086",
+      "subject": "Add sha256File (stream) and client.submitMany + /api/notary/hashes route",
+      "date": "2026-11-06T13:52:25+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "8288e853c938a2985abaa18df9623867fa3bf1bb": {
+      "hash": "1fef924147b795cdb4b3baa4173ebee488248f7a2cabfbe14f0e65bd6cad85db",
+      "subject": "Add TypeScript types for btcnotar and btcnotar/client",
+      "date": "2026-11-06T13:53:51+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "85004d5dbf7355a868553e75c2d24d34e4fc83e6": {
+      "hash": "1970de988e57b9776bb22e505d6d2630ea4ba8da6c193a7044e52e48a94c1c8e",
+      "subject": "Tests for verify.js, bitcoin.js and CLI; BTCNOTAR_MEMPOOL_API; GitHub Actions CI",
+      "date": "2026-11-06T13:55:21+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "9d7d55b5ad8abc508005d85ed25fdbb5383a10fd": {
+      "hash": "6e18bdc98887c2a41fcdbb3b77bf7eec9c9809a3274b81ec8148d025714117e3",
+      "subject": "Add spec/SPEC.md and spec/test-vectors.json (+ JS test)",
+      "date": "2026-11-06T13:56:41+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "dc6dd5d87be2598df01f830218700d9fa32cd665": {
+      "hash": "4dd2368a27ec8cb7da50df85adf8c73a9f9b89e93524b9b6322eb081034225ba",
+      "subject": "Tests: use node:crypto rng for random keys (Node 18 has no global crypto)",
+      "date": "2026-11-06T13:57:15+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "42bb160a32478c48d3506de53bb7b4d224ccebb7": {
+      "hash": "71905b9dfe109bd52926bde5b5c9c4357d434b01b666d23f116abde64d01ff98",
+      "subject": "Web app: download proof file, verify proof file in the browser (en/bg/de)",
+      "date": "2026-11-06T14:00:09+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "0c0d2c14eeca571b8d8f413bcc540f93dd034ca7": {
+      "hash": "a6b807ad0b2e428daa5d6f53ca121210290fb2ca6c8bc72599a97dae0e9fd635",
+      "subject": "Python client package (pip btcnotar, no dependencies) + CI",
+      "date": "2026-11-06T14:02:50+02:00",
+      "submittedAt": "2026-11-21T15:57:13.398Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "d2c38cd0b48dbdae85343b6efa1ae87dc25144fa": {
+      "hash": "54cad933d634cb64e763893e124deb36d238e8e0872e3de2db4f0356d6877207",
+      "subject": "btcnotar 0.4.0: README, CHANGELOG; update PLAN and WORKLOG",
+      "date": "2026-11-06T14:04:15+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "b51fb4be02347a9a8d768cead7f52df702bd83a2": {
+      "hash": "8d2c1758975cc2bc9f68c2402b19ec7d1b4358bb369d70cb2644b842b6fb51ff",
+      "subject": "WORKLOG: fix task count",
+      "date": "2026-11-06T14:04:23+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "77ae8bed3810d32dfd844833c27f2d86c6ba802f": {
+      "hash": "646f7540e46c69e1a19c9ad3d8a72a976ff50102257ff9fd09bcdff8cf37cd3f",
+      "subject": "PLAN: reminders to publish npm 0.4.0 and PyPI 0.1.0",
+      "date": "2026-11-06T14:19:57+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "b36b2ce363f3f661285fbfa42f128703c0e9936e": {
+      "hash": "37afce0165d71d60a7528c9993d2fdefb8223c39caceafa5e1b2f4b2e6c06b9f",
+      "subject": "Add btcnotar-mcp: MCP server for AI agents (notarize, check, save_proof, verify_proof_file)",
+      "date": "2026-11-06T14:37:15+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "3a58910fe78d4940d8ed6b03203fa7303399e0d9": {
+      "hash": "7469dff5264f81a8824911f359f844fa68a0a89c801bc5f00796b3f8d9393e72",
+      "subject": "Remote MCP endpoint /mcp on the web app (Streamable HTTP) + AI agents card on the site",
+      "date": "2026-11-06T14:43:40+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "0ac49fd43573ec27d63ebe67f20e36cba45d9b17": {
+      "hash": "d40cb4c3a856cbe6252e97095ec2f7cade027e6b0d93c8df85e98937379bc8fd",
+      "subject": "CI: fix workflow YAML",
+      "date": "2026-11-06T14:45:10+02:00",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "2a5864334f2af9ab20dbebe9ef8cd54979fe01d6": {
+      "hash": "71436a741b860d650d9cfd07081723d371ed6d82a2412be39d4d553d0df53edb",
+      "subject": "Add landing page with live stats (home.html, /api/stats)",
+      "date": "2026-11-21T15:20:47Z",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "517163d1a4533a62eb12771e36b34340f3462aef": {
+      "hash": "940390680e1547d7af51e2fdf15cadd7cb6299c751705dba3aae6b23784bd578",
+      "subject": "Make home.html the main page; add content from the old page",
+      "date": "2026-11-21T15:29:45Z",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "aa7e78aa7c5025d8647e3359a67eb6fb5a50ff43": {
+      "hash": "d683272f680e7a72470f0f65a657764da06e1a12b525c9fc69b091e4f3a7a6fc",
+      "subject": "Use case: notarize every git commit on Bitcoin",
+      "date": "2026-11-21T15:54:37Z",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    },
+    "c6c69ebcca8c95c8250eada7c74bc29c186e605a": {
+      "hash": "86aee83544ec6772b4eeaf2010c0efdfbab36679a4c1054374ad7dd645fdc117",
+      "subject": "notarize-commits: use the Railway server (btcnotar.com returns 405 for POST)",
+      "date": "2026-11-21T15:56:01Z",
+      "submittedAt": "2026-11-21T15:58:14.736Z",
+      "status": "pending",
+      "nextSettleAt": "2026-11-21T16:57:13.306Z"
+    }
+  }
 }
