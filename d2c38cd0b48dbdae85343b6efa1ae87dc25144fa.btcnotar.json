@@ -1,0 +1,40 @@
+{
+  "format": "btcnotar-proof",
+  "version": 1,
+  "hash": "54cad933d634cb64e763893e124deb36d238e8e0872e3de2db4f0356d6877207",
+  "merkleRoot": "6bb2e6a3d912fb0ca99a411e168a076a17376fe5f0a8e06818002342b3d6ddc7",
+  "proof": [
+    {
+      "position": "left",
+      "hash": "79e23b87693810acd185360aa7750580c656101bb6014cffbb8620dd9c31abc0"
+    },
+    {
+      "position": "right",
+      "hash": "d1a32e75805fa78efb819e8beba89d7108d6e4b38a57638ff8516e19c6479532"
+    },
+    {
+      "position": "right",
+      "hash": "6c67b635ec29b2c7d24729fb6ed3eabb8a24600cb6da11c413b0f81c4db63027"
+    },
+    {
+      "position": "left",
+      "hash": "06f812967d6a6a13e23cb44ccb35d196f25435a8eaaf5c83b1e94f14cca89867"
+    },
+    {
+      "position": "left",
+      "hash": "3eb2889b6725f42945717e940ba78702dbe863b91f6f0fc8e5880891021c9abd"
+    },
+    {
+      "position": "right",
+      "hash": "ea5d74d2bd45b384090cfc1505c6c4f8c3eb93a33175664a93740437f281211c"
+    }
+  ],
+  "txid": "0ceb13b99ad772b49ebf1d2dc6cff403b0c1cce04f22d7f17f67b3f81c04e22d",
+  "network": "mainnet",
+  "blockHeight": 976931,
+  "blockHash": "00000000000000000000922da126551c93836fd337ddd6bf6c66ff6e838b11df",
+  "blockTime": 1795280570,
+  "date": "2026-11-21T17:02:50.000Z",
+  "server": "https://proofofexistance-production.up.railway.app",
+  "savedAt": "2026-11-21T21:39:06.960Z"
+}

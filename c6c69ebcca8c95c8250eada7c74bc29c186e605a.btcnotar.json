@@ -1,0 +1,24 @@
+{
+  "format": "btcnotar-proof",
+  "version": 1,
+  "hash": "86aee83544ec6772b4eeaf2010c0efdfbab36679a4c1054374ad7dd645fdc117",
+  "merkleRoot": "6bb2e6a3d912fb0ca99a411e168a076a17376fe5f0a8e06818002342b3d6ddc7",
+  "proof": [
+    {
+      "position": "left",
+      "hash": "474246507bbf8fd36f34c3f14c816b434c400fe04251b1a9fcd408ba5e39381c"
+    },
+    {
+      "position": "left",
+      "hash": "91bbba9cb060d02850c5e6fa5145e77eaf77c8fdd9e8a7f9ec9b60002f756eb1"
+    }
+  ],
+  "txid": "0ceb13b99ad772b49ebf1d2dc6cff403b0c1cce04f22d7f17f67b3f81c04e22d",
+  "network": "mainnet",
+  "blockHeight": 976931,
+  "blockHash": "00000000000000000000922da126551c93836fd337ddd6bf6c66ff6e838b11df",
+  "blockTime": 1795280570,
+  "date": "2026-11-21T17:02:50.000Z",
+  "server": "https://proofofexistance-production.up.railway.app",
+  "savedAt": "2026-11-21T21:39:11.683Z"
+}
