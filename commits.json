@@ -8,200 +8,300 @@
       "subject": "Initial commit",
       "date": "2026-04-19T06:54:10+01:00",
       "submittedAt": "2026-11-21T21:38:50.033Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "76daf061793d8a38ab299971bc8be16169f8ed99": {
       "hash": "570603788f479fab3c723cd189822ccfec65e0655bc514fb7795c32cf8d925b1",
       "subject": "Initial commit",
       "date": "2026-04-19T07:18:37+01:00",
       "submittedAt": "2026-11-21T21:38:50.033Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "938ecf7cda876c7d3ba35027e6d5ebb4d382920e": {
       "hash": "6e6a2682ad06a5bad0d17e81971bd03cfe7d22b764d5a730001c9f3ce445fcf6",
       "subject": "Create README.md",
       "date": "2026-04-19T07:25:05+01:00",
       "submittedAt": "2026-11-21T21:38:50.033Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "e03d4c2e8fe6bab4c1200f70538ca5d208dcbc0a": {
       "hash": "9dc324762467803532a99839e2620497a1295a2d407a774de1370515231c20e5",
       "subject": "Update README.md",
       "date": "2026-04-19T07:26:56+01:00",
       "submittedAt": "2026-11-21T21:38:50.033Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "58144dd1f2e06ef0e54145aefadcbef60b0797c4": {
       "hash": "a1008fc2febb471042193c94b25aff3a4ce633c5d651350736c5a99957c66366",
       "subject": "Update README.md",
       "date": "2026-04-19T07:31:47+01:00",
       "submittedAt": "2026-11-21T21:38:50.033Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "32dadaad65e400fe524260d01374c925cdc5ae3a": {
       "hash": "40346f1718232a272dd0473f334fe600b6dfe6c4646bf881a9f94021b4f8d343",
       "subject": "Update README.md",
       "date": "2026-04-19T07:35:42+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "65ec10badc7fb58b5582cc11557e96a2652897fc": {
       "hash": "37502e5aaa612a6a0f6f549a64cf147b4e6a0e08147114360b348f5446d006c5",
       "subject": "Update README.md",
       "date": "2026-04-19T07:36:39+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "37cf63c16fb31744e983245c327b30cb48c96a20": {
       "hash": "7a09ab3a543a68152670466c39fc026ce165bfc9e2f2655b14c7b5064e53a3c2",
       "subject": "Update README.md",
       "date": "2026-04-19T07:38:16+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "e12077a45d03eb9c449d77f9abfe1130b935eeaf": {
       "hash": "1a47013d80b6eac3133ab69495c47bc7c3d3c1045b216585bfd7a4c7fcd6fdbf",
       "subject": "Update README.md",
       "date": "2026-04-19T07:40:02+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "fc22f6200b376d9ec724bd3b5527c8ebbd4bebb8": {
       "hash": "6e6b828de6c8bc4f0dd905b4cadd540493bff31ddf466cda950de3a6669200e7",
       "subject": "Update README.md",
       "date": "2026-04-19T07:40:28+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "22892900a3dadd90d8c06681f51be6a65dc58564": {
       "hash": "1604d7832b95c7deabefb0059481f281b3a96f746d99af91debb5c1f3c470406",
       "subject": "Add files via upload",
       "date": "2026-04-19T07:42:36+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "f8998ba47fb56e51dfef7e075a5d91f1cc10728c": {
       "hash": "e55aa4fbf75ada5ec0f8c849b642d7cb97dac97b9a898308a173becfdf80b9fd",
       "subject": "new logo added",
       "date": "2026-04-19T07:44:47+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "a2b6b93b9b756098585cacf5074a35c6de80ced0": {
       "hash": "8148f19339fe1933398ca11ead168ff3750ecfdb934fe458f8e2456082893790",
       "subject": "Merge branch 'main' of https://github.com/yordank/TrustedHash",
       "date": "2026-04-19T07:45:01+01:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "b9bdde7ad1ef1e940c3f6ef76cf4fe362717b5f9": {
       "hash": "7a5ee22ace213650110fe32d4bed75ae8e093a0daae6e6003f642a768a05e5c6",
       "subject": "Restructure into an installable npm library with Merkle-batch anchoring",
       "date": "2026-09-11T15:06:08Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "7a1dd648ac57e6e93af4cb3095ff8009bbf6384e": {
       "hash": "6bf3bb8b9c381c95e3578fe74b12342b2190abff56d38ed00e41044ad81be3c4",
       "subject": "Merge pull request #1 from yordank/claude/clever-pascal-t118xq",
       "date": "2026-09-11T18:14:41+03:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "f3499a352e93d1fc2258f3397a11b9dc7aa36308": {
       "hash": "7474d870b0e198924ecf79964cd678759a7167d183f2ad60f844932a2494916a",
       "subject": "Add developer + reviewer agents with shared plan and work log",
       "date": "2026-10-25T11:14:26Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "0cb973e47b5cab906cc1aa32dfe0896005f34ba0": {
       "hash": "cc7df9209151f80b6ba32b7f8d569cdd819a7a8bff04ad683be58149d0d5f422",
       "subject": "Merge pull request #2 from yordank/claude/dev-review-agents",
       "date": "2026-10-25T13:20:28+02:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "a4e962373ed60d8271c59cadd95d0a97160eaae8": {
       "hash": "1913f944c23882328bb64d7362e647dd3c23bda9aa626129430741b1ee7a1710",
       "subject": "deploy",
       "date": "2026-10-25T11:22:33Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "b9d7b0484960f300c37a17e8d240122a41b03357": {
       "hash": "328a3e55358ed2f3b18b661873983784df68cc595cf78727f098bd03e6555c58",
       "subject": "Add tests for MerkleTree and stores",
       "date": "2026-10-25T11:48:14Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "feddd3ce78e09a0838c305b49afd447929e845ee": {
       "hash": "c14a54f6db3be1e64995dac3ec33fe7ed890ef2074d72d3094bec937fb24a9ae",
       "subject": "Webapp: admin key for manual transactions, require paid invoice for /api/opreturn",
       "date": "2026-10-25T12:19:02Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "437b475cca68edba5bc75f62c8d738289f3d20d5": {
       "hash": "ee47cdba176b4727e4a1a98eb5671db221892810c6152e3b06625a8d0803375b",
       "subject": "Merge pull request #4 from yordank/claude/admin-key",
       "date": "2026-10-25T14:20:50+02:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "ff38a9bff30767ea5a45ef960f3b477c19b53993": {
       "hash": "c535e5f67191a34825fedb08ad9b8190ee2ec509ed116aa4b54dbbb82007131e",
       "subject": "deploy",
       "date": "2026-10-25T12:21:33Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "8b35594a850685a120b85e81dabbdefb709392e2": {
       "hash": "f62e7b0f7746c21ec5ab7eb54fa10440bf196e16c788fac37d47538d0e380cc2",
       "subject": "Settle when the oldest pending hash is intervalMs old; webapp every 60 min",
       "date": "2026-10-25T12:33:10Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "d85e58d460084182a8bf430ced1c4b59a528e3a1": {
       "hash": "31653d210a79797f4eba696d188605af862bf08ed39fb0d8960ecdc4c06a3911",
       "subject": "Merge pull request #5 from yordank/claude/hourly-settle",
       "date": "2026-10-25T14:34:18+02:00",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "65de08758e3dc9a597e25f212ca1a85e6c85c0e3": {
       "hash": "577496ca7e0a575a384e9949febc82e5f5c26e7184c00bfb4b4ba0b90c2a47dd",
       "subject": "Webapp: instant anchor through the btcnotar library; Railway support",
       "date": "2026-10-25T12:37:50Z",
       "submittedAt": "2026-11-21T21:38:50.034Z",
-      "status": "pending",
-      "nextSettleAt": "2026-11-21T22:38:49.967Z"
+      "status": "anchored",
+      "nextSettleAt": "2026-11-21T22:38:49.967Z",
+      "txid": "a85eb885cdf5326f9c4e95a5a1114bdd4e809f3d62d100fc29eb109fb0277d21",
+      "blockHeight": 976957,
+      "blockTime": 1795301056,
+      "confirmed": true
     },
     "d8f5a3c93094ba4b3c92ee84a421941618e96d55": {
       "hash": "c9a987f00173ea66b24806f52d1149ba465506fae4996bc5e9c5a2ba118f26eb",
